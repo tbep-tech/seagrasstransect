@@ -1,0 +1,20 @@
+---
+output: 
+  html_document:
+    code_folding: hide
+css: styles.css
+---
+
+# Seagrass transect training {.tabset}
+  
+```{r setup, message = F, warning = F, results = 'hide', echo = FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = F, message = F, echo = T, fig.path = 'figs/', dev.args = list(family = 'serif'), fig.path = 'figures/')
+
+library(tidyverse)
+
+source('R/utils.R')
+
+# # style file
+# styles <- readLines('https://raw.githubusercontent.com/tbep-tech/css-styling/master/styles.css')
+# writeLines(styles, 'styles.css')
+```
