@@ -12,11 +12,23 @@ Authors@R: c(
            role = c("aut"),
            email = "graulerson@tbep.org")
     )
-Description: Import and analyze seagrass transect data
+Description: Import and analyze seagrass transect data.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
+Depends: 
+  R (>= 3.5)
+Imports: 
+  dplyr, 
+  tidyr, 
+  ggplot2,
+  magrittr,
+  lubridate,
+  purrr,
+  readxl,
+  tibble
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.0
 Suggests: 
-    testthat
+  testthat,
+  covr
