@@ -4,6 +4,7 @@
 #' @param site numeric value indicating site results to plot
 #' @param species chr string indicating which species to plot
 #' @param varplo chr string indicating which variable to plot 
+#' @param base_size numeric indicating text scaling size for plot
 #'
 #' @return A \code{\link[ggplot2]{ggplot}} object
 #' @export
@@ -12,7 +13,7 @@
 #' dat <- form_traindat(trndat)
 #' show_compplot(dat)
 show_compplot <- function(dat, site = c('1', '2', '3', '4', '5', '6', '7', '8', '9', '10'), species = c('Halodule', 'Thalassia'), 
-                          varplo = c('Abundance', 'Blade Length', 'Short Shoot Density')){
+                          varplo = c('Abundance', 'Blade Length', 'Short Shoot Density'), base_size = 18){
 
   # arguments
   site <- match.arg(site)
@@ -44,7 +45,7 @@ show_compplot <- function(dat, site = c('1', '2', '3', '4', '5', '6', '7', '8', 
       subtitle = bquote(italic(.(subttl)))
     ) + 
     ggplot2::scale_x_continuous(expand = c(0, 0)) + 
-    ggplot2::theme_bw() + 
+    ggplot2::theme_bw(base_size = base_size) + 
     ggplot2::theme(
       panel.border = ggplot2::element_blank(),
       axis.title.y = ggplot2::element_blank(), 
