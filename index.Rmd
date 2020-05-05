@@ -24,7 +24,7 @@ library(shiny)
 column(12, 
        column(4, selectInput('sppsel', 'Select species:', choices = c('Halodule', 'Thalassia'))),
        column(4, selectInput('sitsel', 'Select site:', choices = seq(1:10))),
-       column(4, selectInput('varsel', 'Select variable:', choices =  c('Abundance', 'Blade Length', 'Short Shoot Density')))
+       column(4, selectInput('varsel', 'Select variable:', choices =  list('Braun-Blanquet Score' = 'Abundance', 'Canopy Height' = 'Blade Length', 'Short Shoot Density' = 'Short Shoot Density')))
 )
 ```
 
@@ -37,7 +37,7 @@ plodat <- reactive({
   varsel <- input$varsel
   
   toplo <- form_traindat(trndat)
-  out <- show_compplot(toplo, sitsel, sppsel, varsel)
+  out <- show_compplot(toplo, sitsel, sppsel, varsel, base_size = 14)
   
   return(out)
   
