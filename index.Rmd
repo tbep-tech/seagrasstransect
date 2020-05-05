@@ -1,21 +1,51 @@
 ---
 output: 
-  html_document:
-    code_folding: hide
+  html_document
 css: styles.css
+runtime: shiny
 ---
 
 # Seagrass transect training {.tabset}
   
 ```{r setup, message = F, warning = F, results = 'hide', echo = FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = F, message = F, echo = T, fig.path = 'figs/', dev.args = list(family = 'serif'), fig.path = 'figures/')
+knitr::opts_chunk$set(echo = TRUE, warning = F, message = F, echo = F, fig.path = 'figs/', dev.args = list(family = 'serif'), fig.path = 'figures/')
 
 library(tidyverse)
-library(readxl)
-
-source('R/utils.R')
+library(seagrasstransect)
+library(shiny)
 
 # # style file
 # styles <- readLines('https://raw.githubusercontent.com/tbep-tech/css-styling/master/styles.css')
 # writeLines(styles, 'styles.css')
 ```
+
+
+```{r}
+column(12, 
+       column(4, selectInput('sppsel', 'Select species:', choices = c('Halodule', 'Thalassia'))),
+       column(4, selectInput('sitsel', 'Select site:', choices = seq(1:10))),
+       column(4, selectInput('varsel', 'Select variable:', choices =  c('Abundance', 'Blade Length', 'Short Shoot Density')))
+)
+```
+
+```{r reactives}
+plodat <- reactive({
+  
+  # inputs
+  sppsel <- input$sppsel
+  sitsel <- input$sitsel
+  varsel <- input$varsel
+  
+  toplo <- form_traindat(trndat)
+  out <- show_compplot(toplo, sitsel, sppsel, varsel)
+  
+  return(out)
+  
+})
+```
+
+```{r}
+output$plo <- renderPlot(plodat())
+plotOutput('plo')
+```
+
