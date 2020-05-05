@@ -1,0 +1,22 @@
+Package: seagrasstransect
+Title: Import and analyze seagrass transect data
+Version: 0.0.0.9000
+Authors@R: c(
+    person(given = "Marcus",
+           family = "Beck",
+           role = c("aut", "cre"),
+           email = "mbeck@tbep.org",
+           comment = c(ORCID = "0000-0002-4996-0059")),
+    person(given = "Gary",
+           family = "Raulerson",
+           role = c("aut"),
+           email = "graulerson@tbep.org")
+    )
+Description: Import and analyze seagrass transect data
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.0
+Suggests: 
+    testthat

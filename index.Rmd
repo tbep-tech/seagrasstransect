@@ -11,6 +11,7 @@ css: styles.css
 knitr::opts_chunk$set(echo = TRUE, warning = F, message = F, echo = T, fig.path = 'figs/', dev.args = list(family = 'serif'), fig.path = 'figures/')
 
 library(tidyverse)
+library(readxl)
 
 source('R/utils.R')
 
