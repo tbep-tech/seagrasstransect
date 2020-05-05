@@ -25,13 +25,15 @@ form_traindat <- function(trndat){
         T ~ var
       ), 
       val = gsub("[^0-9.-]", '', val), 
-      val = as.numeric(val)
+      val = as.numeric(val), 
+      Site = as.character(Site)
     ) %>% 
     dplyr::group_by(Agency, Site, Savspecies, var) %>% 
     dplyr::summarise(
       aveval = mean(val, na.rm = T),
       sdval = sd(val, na.rm = T)
-    )
+    ) %>% 
+    dplyr::ungroup()
   
   return(out)
   

@@ -2,4 +2,6 @@
 
 export(form_traindat)
 export(read_traindat)
+export(show_compplot)
 importFrom(magrittr,"%>%")
+importFrom(stats,sd)
