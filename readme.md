@@ -1,6 +1,6 @@
 # README
 
-[![Travis build status](https://travis-ci.com/tbep-tech/seagrasstransect.svg?branch=master)](https://travis-ci.com/tbep-tech/seagrasstransect)
+[![Build Status](https://travis-ci.org/tbep-tech/seagrasstransect.svg?branch=master)](https://travis-ci.org/tbep-tech/seagrasstransect)
 [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/tbep-tech/seagrasstransect?branch=master&svg=true)](https://ci.appveyor.com/project/tbep-tech/seagrasstransect)
 [![Codecov test coverage](https://codecov.io/gh/tbep-tech/seagrasstransect/branch/master/graph/badge.svg)](https://codecov.io/gh/tbep-tech/seagrasstransect?branch=master)
 
