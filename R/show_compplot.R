@@ -1,6 +1,6 @@
 #' Make a bar plot for training group comparisons
 #'
-#' @param dat data frame returned by \code{\link{form_traindat}}
+#' @param dat data frame returned by \code{\link{form_trndat}}
 #' @param site numeric value indicating site results to plot
 #' @param species chr string indicating which species to plot
 #' @param varplo chr string indicating which variable to plot 
@@ -10,7 +10,7 @@
 #' @export
 #'
 #' @examples
-#' dat <- form_traindat(trndat)
+#' dat <- form_trndat(trndat)
 #' show_compplot(dat)
 show_compplot <- function(dat, site = c('1', '2', '3', '4', '5', '6', '7', '8', '9', '10'), species = c('Halodule', 'Thalassia'), 
                           varplo = c('Abundance', 'Blade Length', 'Short Shoot Density'), base_size = 18){

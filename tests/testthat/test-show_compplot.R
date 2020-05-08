@@ -1,6 +1,6 @@
 test_that("Checking show_compplot", {
   
-  dat <- form_traindat(trndat)
+  dat <- form_trndat(trndat)
   result <- show_compplot(dat)
   
   expect_is(result, 'ggplot')

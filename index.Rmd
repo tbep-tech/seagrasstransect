@@ -36,7 +36,7 @@ plodat <- reactive({
   sitsel <- input$sitsel
   varsel <- input$varsel
   
-  toplo <- form_traindat(trndat)
+  toplo <- form_trndat(trndat)
   out <- show_compplot(toplo, sitsel, sppsel, varsel, base_size = 14)
   
   return(out)

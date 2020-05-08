@@ -13,7 +13,7 @@ show_compplot(
 )
 }
 \arguments{
-\item{dat}{data frame returned by \code{\link{form_traindat}}}
+\item{dat}{data frame returned by \code{\link{form_trndat}}}
 
 \item{site}{numeric value indicating site results to plot}
 
@@ -30,6 +30,6 @@ A \code{\link[ggplot2]{ggplot}} object
 Make a bar plot for training group comparisons
 }
 \examples{
-dat <- form_traindat(trndat)
+dat <- form_trndat(trndat)
 show_compplot(dat)
 }

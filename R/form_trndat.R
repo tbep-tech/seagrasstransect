@@ -1,6 +1,6 @@
-#' Format training data for plotting
+#' Format training data from file for plotting
 #'
-#' @param trndat output from \code{\link{read_traindat}}
+#' @param trndat output from \code{\link{read_trndat}}
 #'
 #' @return data frame in long format
 #' @export
@@ -8,8 +8,8 @@
 #' @importFrom magrittr %>%
 #' 
 #' @examples
-#' form_traindat(trndat)
-form_traindat <- function(trndat){
+#' form_trndat(trndat)
+form_trndat <- function(trndat){
   
   out <- trndat %>% 
     dplyr::select(Agency, Site, Savspecies, Abundance, matches('^BL|^SSD')) %>% 

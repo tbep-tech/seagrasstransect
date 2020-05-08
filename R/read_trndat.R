@@ -1,4 +1,4 @@
-#' Import training data
+#' Import training data from file
 #'
 #' @param pth chr string for location of file
 #' @param sheet chr string of sheet to import
@@ -9,9 +9,9 @@
 #' @examples
 #' \dontrun{
 #' pth <- 'inst/extdata/Class_Data_20190627.xlsx'
-#' read_traindat(pth)
+#' read_trndat(pth)
 #' }
-read_traindat <- function(pth, sheet = 'All data'){
+read_trndat <- function(pth, sheet = 'All data'){
   
   dat <- readxl::read_excel(pth, sheet = sheet)
   
