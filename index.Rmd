@@ -39,7 +39,8 @@ column(12,
       tosel <- dat %>% 
         filter(Savspecies %in% sppsel) %>% 
         pull(Transect) %>% 
-        unique
+        unique %>% 
+        sort
       
       selectInput('trnsel', 'Select transect:', choices = tosel)
          
@@ -58,7 +59,8 @@ column(12,
         filter(Savspecies %in% sppsel) %>% 
         filter(Transect %in% trnsel) %>% 
         pull(Site) %>% 
-        unique
+        unique %>% 
+        sort
       
       selectInput('sitsel', 'Select site:', choices = tosel)
       
