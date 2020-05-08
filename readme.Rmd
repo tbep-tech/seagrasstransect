@@ -1,0 +1,40 @@
+---
+output: github_document
+---
+
+```{r setup, warning = F, message = F, echo = F}
+library(seagrasstransect)
+```
+
+# README
+
+[![Build Status](https://travis-ci.org/tbep-tech/seagrasstransect.svg?branch=master)](https://travis-ci.org/tbep-tech/seagrasstransect)
+[![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/tbep-tech/seagrasstransect?branch=master&svg=true)](https://ci.appveyor.com/project/tbep-tech/seagrasstransect)
+[![Codecov test coverage](https://codecov.io/gh/tbep-tech/seagrasstransect/branch/master/graph/badge.svg)](https://codecov.io/gh/tbep-tech/seagrasstransect?branch=master)
+
+This repository contains materials for importing annual seagrass training data, summarizing results, and producing comparisons.  View the results [here](http://shiny.tbeptech.org/seagrasstransect/).
+
+# Using the package
+
+Install the package from GitHub using devtools.
+
+```{r, eval = F}
+install.packages('devtools')
+devtools::install_github('tbep-tech/seagrasstransect')
+library(seagrasstransct)
+```
+
+Use the functions to import data from the API and create a summary plot. 
+
+```{r, fig.height = 2, fig.width = 7}
+# import JSON
+trndat <- read_trnjsn()
+
+# format JSON data for plotting
+trndat <- form_trnjsn(trndat)
+
+# plot
+show_compplot(trndat, transect = 'TRAINING01', site = '1', species = 'Halodule', varplo = 'Abundance', 
+              base_size = 12)
+```
+
