@@ -11,8 +11,7 @@ runtime: shiny
 knitr::opts_chunk$set(echo = TRUE, warning = F, message = F, echo = F, fig.path = 'figs/', dev.args = list(family = 'serif'), fig.path = 'figures/')
 
 library(tidyverse)
-# library(seagrasstransect)
-devtools::load_all('.')
+library(seagrasstransect)
 library(shiny)
 
 # get data and format
