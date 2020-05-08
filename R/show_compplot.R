@@ -1,7 +1,8 @@
 #' Make a bar plot for training group comparisons
 #'
 #' @param dat data frame returned by \code{\link{form_trndat}}
-#' @param site numeric value indicating site results to plot
+#' @param transect chr string indicating transect results to plot
+#' @param site chr string indicating site results to plot
 #' @param species chr string indicating which species to plot
 #' @param varplo chr string indicating which variable to plot 
 #' @param base_size numeric indicating text scaling size for plot
@@ -11,12 +12,11 @@
 #'
 #' @examples
 #' dat <- form_trndat(trndat)
-#' show_compplot(dat)
-show_compplot <- function(dat, site = c('1', '2', '3', '4', '5', '6', '7', '8', '9', '10'), species = c('Halodule', 'Thalassia'), 
+#' show_compplot(dat, transect = 'TRAINING01', site = '1', species = 'Halodule', varplo = 'Abundance')
+show_compplot <- function(dat, transect, site, species = c('Halodule', 'Ruppia', 'Syringodium', 'Thalassia'), 
                           varplo = c('Abundance', 'Blade Length', 'Short Shoot Density'), base_size = 18){
 
   # arguments
-  site <- match.arg(site)
   species <- match.arg(species)
   varplo <- match.arg(varplo)
   
@@ -24,20 +24,21 @@ show_compplot <- function(dat, site = c('1', '2', '3', '4', '5', '6', '7', '8', 
   lbs <- c('Braun-Blanquet Score', 'Canopy Height (+/- 1 sd)', 'Short Shoot Counts (+/- 1 sd)')
   names(lbs) <- c('Abundance', 'Blade Length', 'Short Shoot Density')
   xlb <- lbs[[varplo]]
-  ttl <- paste('Site', site)
-  sublbs <- c('Halodule wrightii', 'Thalassia testidinum')
-  names(sublbs) <- c('Halodule', 'Thalassia')
+  ttl <- paste0('Transect ', transect, ', Site ', site)
+  sublbs <- c('Halodule wrightii', 'Ruppia maritima', 'Syringodium filiforme', 'Thalassia testidinum')
+  names(sublbs) <- c('Halodule', 'Ruppia', 'Syringodium', 'Thalassia')
   subttl <- sublbs[[species]]
   
   # data to plot
   toplo <- dat %>% 
+    dplyr::filter(Transect %in% transect) %>% 
     dplyr::filter(Site %in% site) %>% 
     dplyr::filter(Savspecies %in% species) %>% 
     dplyr::filter(var %in% varplo) %>% 
-    dplyr::mutate(Agency = factor(Agency, levels = rev(unique(Agency))))
+    dplyr::mutate(Crew = factor(Crew, levels = rev(unique(Crew))))
   
   # plot
-  p <- ggplot2::ggplot(toplo, ggplot2::aes(x = aveval, y = Agency)) + 
+  p <- ggplot2::ggplot(toplo, ggplot2::aes(x = aveval, y = Crew)) + 
     ggplot2::geom_bar(stat = 'identity', alpha = 0.7) + 
     ggplot2::labs(
       x = xlb, 

@@ -12,9 +12,9 @@
 form_trndat <- function(trndat){
   
   out <- trndat %>% 
-    dplyr::select(Agency, Site, Savspecies, Abundance, matches('^BL|^SSD')) %>% 
+    dplyr::select(Crew = Agency, Site, Savspecies, Abundance, matches('^BL|^SSD')) %>% 
     dplyr::filter(Savspecies %in% c('Halodule', 'Thalassia')) %>% 
-    tidyr::gather('var', 'val', -Agency, -Site, -Savspecies) %>% 
+    tidyr::gather('var', 'val', -Crew, -Site, -Savspecies) %>% 
     dplyr::mutate(
       rep = gsub('.*([0-9])$', '\\1', var),
       rep = gsub('^Abundance$', '1', rep),
@@ -26,9 +26,10 @@ form_trndat <- function(trndat){
       ), 
       val = gsub("[^0-9.-]", '', val), 
       val = as.numeric(val), 
-      Site = as.character(Site)
+      Site = as.character(Site),
+      Transect = 'TRAINING01'
     ) %>% 
-    dplyr::group_by(Agency, Site, Savspecies, var) %>% 
+    dplyr::group_by(Crew, Transect, Site, Savspecies, var) %>% 
     dplyr::summarise(
       aveval = mean(val, na.rm = T),
       sdval = sd(val, na.rm = T)

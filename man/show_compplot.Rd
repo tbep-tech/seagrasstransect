@@ -6,8 +6,9 @@
 \usage{
 show_compplot(
   dat,
-  site = c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10"),
-  species = c("Halodule", "Thalassia"),
+  transect,
+  site,
+  species = c("Halodule", "Ruppia", "Syringodium", "Thalassia"),
   varplo = c("Abundance", "Blade Length", "Short Shoot Density"),
   base_size = 18
 )
@@ -15,7 +16,9 @@ show_compplot(
 \arguments{
 \item{dat}{data frame returned by \code{\link{form_trndat}}}
 
-\item{site}{numeric value indicating site results to plot}
+\item{transect}{chr string indicating transect results to plot}
+
+\item{site}{chr string indicating site results to plot}
 
 \item{species}{chr string indicating which species to plot}
 
@@ -31,5 +34,5 @@ Make a bar plot for training group comparisons
 }
 \examples{
 dat <- form_trndat(trndat)
-show_compplot(dat)
+show_compplot(dat, transect = 'TRAINING01', site = '1', species = 'Halodule', varplo = 'Abundance')
 }

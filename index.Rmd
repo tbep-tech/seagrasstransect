@@ -11,8 +11,16 @@ runtime: shiny
 knitr::opts_chunk$set(echo = TRUE, warning = F, message = F, echo = F, fig.path = 'figs/', dev.args = list(family = 'serif'), fig.path = 'figures/')
 
 library(tidyverse)
-library(seagrasstransect)
+# library(seagrasstransect)
+devtools::load_all('.')
 library(shiny)
+
+# get data and format
+trnjsn <- read_trnjsn()
+dat <- form_trnjsn(trnjsn)
+
+# get choices for selection
+sppopt <- unique(dat$Savspecies)
 
 # # style file
 # styles <- readLines('https://raw.githubusercontent.com/tbep-tech/css-styling/master/styles.css')
@@ -22,9 +30,64 @@ library(shiny)
 
 ```{r}
 column(12, 
-       column(4, selectInput('sppsel', 'Select species:', choices = c('Halodule', 'Thalassia'))),
-       column(4, selectInput('sitsel', 'Select site:', choices = seq(1:10))),
-       column(4, selectInput('varsel', 'Select variable:', choices =  list('Braun-Blanquet Score' = 'Abundance', 'Canopy Height' = 'Blade Length', 'Short Shoot Density' = 'Short Shoot Density')))
+  column(3, selectInput('sppsel', 'Select species:', choices = sppopt)),
+  column(3,
+    renderUI({
+         
+      # inputs
+      sppsel <- input$sppsel
+         
+      tosel <- dat %>% 
+        filter(Savspecies %in% sppsel) %>% 
+        pull(Transect) %>% 
+        unique
+      
+      selectInput('trnsel', 'Select transect:', choices = tosel)
+         
+      })
+  ), 
+  column(3,
+    renderUI({
+      
+      # inputs
+      sppsel <- input$sppsel
+      trnsel <- input$trnsel
+      
+      req(trnsel)
+
+      tosel <- dat %>% 
+        filter(Savspecies %in% sppsel) %>% 
+        filter(Transect %in% trnsel) %>% 
+        pull(Site) %>% 
+        unique
+      
+      selectInput('sitsel', 'Select site:', choices = tosel)
+      
+    })
+  ),
+  column(3, 
+    renderUI({
+      
+      # inputs
+      sppsel <- input$sppsel
+      trnsel <- input$trnsel
+      sitsel <- input$sitsel
+      
+      req(sitsel)
+  
+
+      tosel <- dat %>% 
+        filter(Savspecies %in% sppsel) %>% 
+        filter(Transect %in% trnsel) %>% 
+        filter(Site %in% sitsel) %>% 
+        pull(var) %>%  
+        unique
+      
+      selectInput('varsel', 'Select variable:', choices =  tosel)
+            
+    })     
+  )
+
 )
 ```
 
@@ -33,11 +96,13 @@ plodat <- reactive({
   
   # inputs
   sppsel <- input$sppsel
+  trnsel <- input$trnsel
   sitsel <- input$sitsel
   varsel <- input$varsel
   
-  toplo <- form_trndat(trndat)
-  out <- show_compplot(toplo, sitsel, sppsel, varsel, base_size = 14)
+  req(varsel)
+  
+  out <- show_compplot(dat, trnsel, sitsel, sppsel, varsel, base_size = 14)
   
   return(out)
   
