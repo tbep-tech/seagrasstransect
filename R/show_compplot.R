@@ -1,7 +1,6 @@
 #' Make a bar plot for training group comparisons
 #'
 #' @param dat data frame returned by \code{\link{form_trndat}}
-#' @param transect chr string indicating transect results to plot
 #' @param site chr string indicating site results to plot
 #' @param species chr string indicating which species to plot
 #' @param varplo chr string indicating which variable to plot 
@@ -12,8 +11,8 @@
 #'
 #' @examples
 #' dat <- form_trndat(trndat)
-#' show_compplot(dat, transect = 'TRAINING01', site = '1', species = 'Halodule', varplo = 'Abundance')
-show_compplot <- function(dat, transect, site, species = c('Halodule', 'Ruppia', 'Syringodium', 'Thalassia'), 
+#' show_compplot(dat, site = '1', species = 'Halodule', varplo = 'Abundance')
+show_compplot <- function(dat, site, species = c('Halodule', 'Ruppia', 'Syringodium', 'Thalassia'), 
                           varplo = c('Abundance', 'Blade Length', 'Short Shoot Density'), base_size = 18){
 
   # arguments
@@ -24,14 +23,13 @@ show_compplot <- function(dat, transect, site, species = c('Halodule', 'Ruppia',
   lbs <- c('Braun-Blanquet Score', 'Canopy Height (+/- 1 sd)', 'Short Shoot Counts (+/- 1 sd)')
   names(lbs) <- c('Abundance', 'Blade Length', 'Short Shoot Density')
   xlb <- lbs[[varplo]]
-  ttl <- paste0('Transect ', transect, ', Site ', site)
+  ttl <- paste('Site', site)
   sublbs <- c('Halodule wrightii', 'Ruppia maritima', 'Syringodium filiforme', 'Thalassia testidinum')
   names(sublbs) <- c('Halodule', 'Ruppia', 'Syringodium', 'Thalassia')
   subttl <- sublbs[[species]]
   
   # data to plot
   toplo <- dat %>% 
-    dplyr::filter(Transect %in% transect) %>% 
     dplyr::filter(Site %in% site) %>% 
     dplyr::filter(Savspecies %in% species) %>% 
     dplyr::filter(var %in% varplo) %>% 

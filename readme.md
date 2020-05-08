@@ -32,7 +32,7 @@ trndat <- read_trnjsn()
 trndat <- form_trnjsn(trndat)
 
 # plot
-show_compplot(trndat, transect = 'TRAINING01', site = '1', species = 'Halodule', varplo = 'Abundance', 
+show_compplot(trndat, site = '1', species = 'Halodule', varplo = 'Abundance', 
               base_size = 12)
 ```
 

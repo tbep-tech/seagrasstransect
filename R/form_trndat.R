@@ -26,10 +26,9 @@ form_trndat <- function(trndat){
       ), 
       val = gsub("[^0-9.-]", '', val), 
       val = as.numeric(val), 
-      Site = as.character(Site),
-      Transect = 'TRAINING01'
+      Site = as.character(Site)
     ) %>% 
-    dplyr::group_by(Crew, Transect, Site, Savspecies, var) %>% 
+    dplyr::group_by(Crew, Site, Savspecies, var) %>% 
     dplyr::summarise(
       aveval = mean(val, na.rm = T),
       sdval = sd(val, na.rm = T)

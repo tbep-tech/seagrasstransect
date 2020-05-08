@@ -29,35 +29,15 @@ sppopt <- unique(dat$Savspecies)
 
 ```{r}
 column(12, 
-  column(3, selectInput('sppsel', 'Select species:', choices = sppopt)),
-  column(3,
-    renderUI({
-         
-      # inputs
-      sppsel <- input$sppsel
-         
-      tosel <- dat %>% 
-        filter(Savspecies %in% sppsel) %>% 
-        pull(Transect) %>% 
-        unique %>% 
-        sort
-      
-      selectInput('trnsel', 'Select transect:', choices = tosel)
-         
-      })
-  ), 
-  column(3,
+  column(4, selectInput('sppsel', 'Select species:', choices = sppopt)),
+  column(4,
     renderUI({
       
       # inputs
       sppsel <- input$sppsel
-      trnsel <- input$trnsel
-      
-      req(trnsel)
 
       tosel <- dat %>% 
         filter(Savspecies %in% sppsel) %>% 
-        filter(Transect %in% trnsel) %>% 
         pull(Site) %>% 
         unique %>% 
         sort
@@ -66,12 +46,11 @@ column(12,
       
     })
   ),
-  column(3, 
+  column(4, 
     renderUI({
       
       # inputs
       sppsel <- input$sppsel
-      trnsel <- input$trnsel
       sitsel <- input$sitsel
       
       req(sitsel)
@@ -79,7 +58,6 @@ column(12,
 
       tosel <- dat %>% 
         filter(Savspecies %in% sppsel) %>% 
-        filter(Transect %in% trnsel) %>% 
         filter(Site %in% sitsel) %>% 
         pull(var) %>%  
         unique
@@ -97,13 +75,12 @@ plodat <- reactive({
   
   # inputs
   sppsel <- input$sppsel
-  trnsel <- input$trnsel
   sitsel <- input$sitsel
   varsel <- input$varsel
   
   req(varsel)
   
-  out <- show_compplot(dat, trnsel, sitsel, sppsel, varsel, base_size = 14)
+  out <- show_compplot(dat, sitsel, sppsel, varsel, base_size = 14)
   
   return(out)
   

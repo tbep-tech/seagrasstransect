@@ -26,7 +26,7 @@ library(seagrasstransct)
 
 Use the functions to import data from the API and create a summary plot. 
 
-```{r, fig.height = 2, fig.width = 7}
+```{r, fig.height = 5, fig.width = 7}
 # import JSON
 trndat <- read_trnjsn()
 
@@ -34,7 +34,7 @@ trndat <- read_trnjsn()
 trndat <- form_trnjsn(trndat)
 
 # plot
-show_compplot(trndat, transect = 'TRAINING01', site = '1', species = 'Halodule', varplo = 'Abundance', 
+show_compplot(trndat, site = '1', species = 'Halodule', varplo = 'Abundance', 
               base_size = 12)
 ```
 
