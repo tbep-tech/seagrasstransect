@@ -87,8 +87,8 @@ plodat <- reactive({
 })
 ```
 
-```{r}
-output$plo <- renderPlot(plodat())
+```{r, fig.align = 'center'}
+output$plo <- renderPlot(plodat(), height = 600, width = 800)
 plotOutput('plo')
 ```
 
