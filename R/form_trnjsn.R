@@ -11,7 +11,7 @@
 #' trnjsn <- read_trnjsn()
 #' form_trnjsn(trnjsn)
 form_trnjsn <- function(trnjsn){
-  
+
   out <- trnjsn %>% 
     tibble::as_tibble() %>% 
     dplyr::rename(IDall = ID) %>% 
