@@ -36,25 +36,26 @@ show_compplot <- function(dat, site, species = c('Halodule', 'Ruppia', 'Syringod
     dplyr::mutate(Crew = factor(Crew, levels = rev(unique(Crew))))
   
   # plot
-  p <- ggplot2::ggplot(toplo, ggplot2::aes(x = aveval, y = Crew)) + 
+  p <- ggplot2::ggplot(toplo, ggplot2::aes(x = Crew, y = aveval)) + 
     ggplot2::geom_bar(stat = 'identity', alpha = 0.7) + 
     ggplot2::labs(
-      x = xlb, 
+      y = xlb, 
       title = ttl, 
       subtitle = bquote(italic(.(subttl)))
     ) + 
-    ggplot2::scale_x_continuous(expand = c(0, 0)) + 
+    ggplot2::scale_y_continuous(expand = c(0, 0)) + 
     ggplot2::theme_bw(base_size = base_size) + 
     ggplot2::theme(
       panel.border = ggplot2::element_blank(),
-      axis.title.y = ggplot2::element_blank(), 
-      panel.grid.major.y = ggplot2::element_blank(), 
-      panel.grid.minor.y = ggplot2::element_blank()
+      axis.title.x = ggplot2::element_blank(), 
+      axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
+      panel.grid.major.x = ggplot2::element_blank(), 
+      panel.grid.minor.x = ggplot2::element_blank()
     )
     
   if(!varplo %in% 'Abundance') 
     p <- p + 
-      ggplot2::geom_errorbar(ggplot2::aes(xmin = aveval - sdval, xmax = aveval + sdval), width = 0.25)
+      ggplot2::geom_errorbar(ggplot2::aes(ymin = aveval - sdval, ymax = aveval + sdval), width = 0.25)
   
   return(p)
 
