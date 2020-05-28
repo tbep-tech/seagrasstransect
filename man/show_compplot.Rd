@@ -9,7 +9,8 @@ show_compplot(
   site,
   species = c("Halodule", "Ruppia", "Syringodium", "Thalassia"),
   varplo = c("Abundance", "Blade Length", "Short Shoot Density"),
-  base_size = 18
+  base_size = 18,
+  xtxt = 10
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ show_compplot(
 \item{varplo}{chr string indicating which variable to plot}
 
 \item{base_size}{numeric indicating text scaling size for plot}
+
+\item{xtxt}{numeric indicating text size for x-axis labels}
 }
 \value{
 A \code{\link[ggplot2]{ggplot}} object

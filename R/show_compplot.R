@@ -5,6 +5,7 @@
 #' @param species chr string indicating which species to plot
 #' @param varplo chr string indicating which variable to plot 
 #' @param base_size numeric indicating text scaling size for plot
+#' @param xtxt numeric indicating text size for x-axis labels
 #'
 #' @return A \code{\link[ggplot2]{ggplot}} object
 #' @export
@@ -14,7 +15,7 @@
 #' dat <- form_trnjsn(trnjsn)
 #' show_compplot(dat, site = '1', species = 'Halodule', varplo = 'Abundance')
 show_compplot <- function(dat, site, species = c('Halodule', 'Ruppia', 'Syringodium', 'Thalassia'), 
-                          varplo = c('Abundance', 'Blade Length', 'Short Shoot Density'), base_size = 18){
+                          varplo = c('Abundance', 'Blade Length', 'Short Shoot Density'), base_size = 18, xtxt = 10){
 
   # arguments
   species <- match.arg(species)
@@ -63,7 +64,7 @@ show_compplot <- function(dat, site, species = c('Halodule', 'Ruppia', 'Syringod
     ggplot2::theme(
       panel.border = ggplot2::element_blank(),
       axis.title.x = ggplot2::element_blank(), 
-      axis.text.x = ggplot2::element_text(size = 10),
+      axis.text.x = ggplot2::element_text(size = xtxt),
       panel.grid.major.x = ggplot2::element_blank(), 
       panel.grid.minor.x = ggplot2::element_blank(), 
       legend.title = ggplot2::element_blank(), 

@@ -75,7 +75,7 @@ plodat <- reactive({
   
   req(varsel)
   
-  out <- show_compplot(dat, sitsel, sppsel, varsel, base_size = 14)
+  out <- show_compplot(dat, sitsel, sppsel, varsel, base_size = 18, xtxt = 13)
   
   return(out)
   
@@ -128,7 +128,7 @@ column(12,
 ```
 
 ```{r, fig.align = 'center'}
-output$plo <- renderPlot(plodat(), height = 600, width = 800)
+output$plo <- renderPlot(plodat(), height = 600, width = 850)
 plotOutput('plo')
 ```
 
