@@ -13,7 +13,7 @@ show_compplot(
 )
 }
 \arguments{
-\item{dat}{data frame returned by \code{\link{form_trndat}}}
+\item{dat}{data frame returned by \code{\link{form_trnjsn}}}
 
 \item{site}{chr string indicating site results to plot}
 

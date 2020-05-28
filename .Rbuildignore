@@ -4,3 +4,7 @@
 ^codecov\.yml$
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^index\.Rmd$
+^readme\..*$
+^readme\_files/.*
+^styles\.css$

@@ -1,6 +1,8 @@
 test_that("Checking show_compplot", {
   
-  dat <- form_trndat(trndat)
+  trnjsn <- read_trnjsn()
+  dat<- form_trnjsn(trnjsn)
+  
   result <- show_compplot(dat, site = '1')
   
   expect_is(result, 'ggplot')

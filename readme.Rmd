@@ -26,7 +26,7 @@ library(seagrasstransct)
 
 Use the functions to import data from the API and create a summary plot. 
 
-```{r, fig.height = 5, fig.width = 7}
+```{r, fig.height = 7, fig.width = 9}
 # import JSON
 trndat <- read_trnjsn()
 
