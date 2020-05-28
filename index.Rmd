@@ -23,9 +23,60 @@ dat <- form_trnjsn(trnjsn)
 # get choices for selection
 sppopt <- unique(dat$Savspecies)
 
+downloadButtonRmd <- function (outputId, label, class = NULL, ...)  {
+  tags$a(id = outputId, class = paste("btn btn-default shiny-download-link", 
+                                      class), href = "", target = "_blank", download = NA, 
+         icon("download"), label, ...)
+}
 # # style file
 # styles <- readLines('https://raw.githubusercontent.com/tbep-tech/css-styling/master/styles.css')
 # writeLines(styles, 'styles.css')
+```
+
+
+```{r downloadhandlers}
+# wq data
+output$dlfigs <- downloadHandler(
+  filename = function(){'allfigures.pdf'},
+  content = function(file){
+
+    todl <- dat %>% 
+      select(var, Savspecies, Site) %>% 
+      unique
+
+    pdf(file, width = input$width, height = input$height)
+    
+    for(i in 1:nrow(todl)){
+      
+      site <- todl[[i, 'Site']]
+      species <- todl[[i, 'Savspecies']]
+      varplo <- todl[[i, 'var']]
+      
+      show_compplot(dat, site, species, varplo)
+      
+    }
+      
+    dev.off()
+    
+  }
+)
+```
+
+```{r reactives}
+plodat <- reactive({
+  
+  # inputs
+  sppsel <- input$sppsel
+  sitsel <- input$sitsel
+  varsel <- input$varsel
+  
+  req(varsel)
+  
+  out <- show_compplot(dat, sitsel, sppsel, varsel, base_size = 14)
+  
+  return(out)
+  
+})
 ```
 
 ## Plot results 
@@ -73,23 +124,6 @@ column(12,
 )
 ```
 
-```{r reactives}
-plodat <- reactive({
-  
-  # inputs
-  sppsel <- input$sppsel
-  sitsel <- input$sitsel
-  varsel <- input$varsel
-  
-  req(varsel)
-  
-  out <- show_compplot(dat, sitsel, sppsel, varsel, base_size = 14)
-  
-  return(out)
-  
-})
-```
-
 ```{r, fig.align = 'center'}
 output$plo <- renderPlot(plodat(), height = 600, width = 800)
 plotOutput('plo')
@@ -121,6 +155,18 @@ reactable(totab,
   ),
   filterable = T, 
   bordered = T
+)
+```
+
+## Download 
+
+```{r}
+column(6,  
+  HTML('<br></br>'),
+  downloadButtonRmd('dlfigs', 'Download all figures'),
+  HTML('<br></br>'),
+  numericInput('height', 'Plot heights (in)', value = 7, min = 0, step = 1),
+  numericInput('width', 'Plot widths (in)', value = 8, min = 0, step = 1)
 )
 ```
 
