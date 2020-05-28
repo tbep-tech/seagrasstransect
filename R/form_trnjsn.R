@@ -16,14 +16,14 @@ form_trnjsn <- function(trnjsn){
     tibble::as_tibble() %>% 
     dplyr::rename(IDall = ID) %>% 
     tidyr::unnest('Observation') %>% 
-    dplyr::select(Crew, Site, Savspecies = Species, Abundance = SpeciesAbundance, 
+    dplyr::select(Crew, MonitoringAgency, Site, Savspecies = Species, Abundance = SpeciesAbundance, 
                   matches('BladeLength_|ShootDensity_')) %>% 
     dplyr::select(-BladeLength_Avg, -BladeLength_StdDev, -ShootDensity_Avg, -ShootDensity_StdDev) %>% 
     dplyr::mutate(
       Abundance = gsub('\\s=.*$', '', Abundance), 
       Abundance = as.numeric(Abundance)
     ) %>% 
-    tidyr::gather('var', 'val', -Crew, -Site, -Savspecies) %>% 
+    tidyr::gather('var', 'val', -Crew, -MonitoringAgency, -Site, -Savspecies) %>% 
     dplyr::mutate(
       rep = gsub('.*([0-9])$', '\\1', var),
       rep = gsub('^Abundance$', '1', rep),
@@ -37,7 +37,7 @@ form_trnjsn <- function(trnjsn){
       val = as.numeric(val), 
       Site = as.character(Site)
     ) %>% 
-    dplyr::group_by(Crew, Site, Savspecies, var) %>% 
+    dplyr::group_by(Crew, MonitoringAgency, Site, Savspecies, var) %>% 
     dplyr::summarise(
       aveval = mean(val, na.rm = T),
       sdval = sd(val, na.rm = T)

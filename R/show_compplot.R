@@ -10,7 +10,8 @@
 #' @export
 #'
 #' @examples
-#' dat <- form_trndat(trndat)
+#' trnjsn <- read_trnjsn()
+#' dat <- form_trnjsn(trnjsn)
 #' show_compplot(dat, site = '1', species = 'Halodule', varplo = 'Abundance')
 show_compplot <- function(dat, site, species = c('Halodule', 'Ruppia', 'Syringodium', 'Thalassia'), 
                           varplo = c('Abundance', 'Blade Length', 'Short Shoot Density'), base_size = 18){
@@ -34,7 +35,9 @@ show_compplot <- function(dat, site, species = c('Halodule', 'Ruppia', 'Syringod
     dplyr::filter(Savspecies %in% species) %>% 
     dplyr::filter(var %in% varplo) %>% 
     dplyr::mutate(
-      Crew = gsub('(.{1,12})(\\s|$)', '\\1\n', Crew)
+      grp = paste0(MonitoringAgency, ' (', Crew, ')'),
+      grp = gsub('(.{1,12})(\\s|$)', '\\1\n', grp), 
+      grp = gsub('\\n*$', '', grp)
       )
 
   # get summary stats
@@ -47,7 +50,7 @@ show_compplot <- function(dat, site, species = c('Halodule', 'Ruppia', 'Syringod
     tidyr::gather('sumvar', 'sumval', Median, Average)
   
   # plot
-  p <- ggplot2::ggplot(toplo, ggplot2::aes(x = Crew, y = aveval)) + 
+  p <- ggplot2::ggplot(toplo, ggplot2::aes(x = grp, y = aveval)) + 
     ggplot2::geom_bar(stat = 'identity', alpha = 0.7) + 
     ggplot2::labs(
       y = xlb, 

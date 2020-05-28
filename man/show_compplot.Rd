@@ -30,6 +30,7 @@ A \code{\link[ggplot2]{ggplot}} object
 Make a bar plot for training group comparisons
 }
 \examples{
-dat <- form_trndat(trndat)
+trnjsn <- read_trnjsn()
+dat <- form_trnjsn(trnjsn)
 show_compplot(dat, site = '1', species = 'Halodule', varplo = 'Abundance')
 }
