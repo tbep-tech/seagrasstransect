@@ -37,6 +37,15 @@ show_compplot <- function(dat, site, species = c('Halodule', 'Ruppia', 'Syringod
       Crew = gsub('(.{1,12})(\\s|$)', '\\1\n', Crew)
       )
 
+  # get summary stats
+  sumplo <- toplo %>% 
+    dplyr::group_by(var) %>% 
+    dplyr::summarise(
+      Median = median(aveval, na.rm = TRUE), 
+      Average = mean(aveval, na.rm = TRUE)
+    ) %>% 
+    tidyr::gather('sumvar', 'sumval', Median, Average)
+  
   # plot
   p <- ggplot2::ggplot(toplo, ggplot2::aes(x = Crew, y = aveval)) + 
     ggplot2::geom_bar(stat = 'identity', alpha = 0.7) + 
@@ -53,12 +62,30 @@ show_compplot <- function(dat, site, species = c('Halodule', 'Ruppia', 'Syringod
       axis.title.x = ggplot2::element_blank(), 
       axis.text.x = ggplot2::element_text(size = 8),
       panel.grid.major.x = ggplot2::element_blank(), 
-      panel.grid.minor.x = ggplot2::element_blank()
+      panel.grid.minor.x = ggplot2::element_blank(), 
+      legend.title = ggplot2::element_blank(), 
+      legend.position = 'bottom'
     )
     
-  if(!varplo %in% 'Abundance') 
+  # add error bar and both summary lines if not abundance
+  if(!varplo %in% 'Abundance'){ 
+      
     p <- p + 
-      ggplot2::geom_errorbar(ggplot2::aes(ymin = aveval - sdval, ymax = aveval + sdval), width = 0.25)
+      ggplot2::geom_errorbar(ggplot2::aes(ymin = aveval - sdval, ymax = aveval + sdval), width = 0.25) +
+      ggplot2::geom_hline(data = sumplo, ggplot2::aes(yintercept = sumval, linetype = sumvar), color = 'red')
+    
+  }
+  
+  # add mean summary lines if abundance
+  if(varplo %in% 'Abundance'){
+    
+    sumplo <- sumplo %>% 
+      dplyr::filter(sumvar %in% 'Average') 
+    
+    p <- p + 
+      ggplot2::geom_hline(data = sumplo, ggplot2::aes(yintercept = sumval, linetype = sumvar), color = 'red')
+    
+  }
   
   return(p)
 
