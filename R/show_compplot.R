@@ -33,8 +33,10 @@ show_compplot <- function(dat, site, species = c('Halodule', 'Ruppia', 'Syringod
     dplyr::filter(Site %in% site) %>% 
     dplyr::filter(Savspecies %in% species) %>% 
     dplyr::filter(var %in% varplo) %>% 
-    dplyr::mutate(Crew = factor(Crew, levels = rev(unique(Crew))))
-  
+    dplyr::mutate(
+      Crew = gsub('(.{1,12})(\\s|$)', '\\1\n', Crew)
+      )
+
   # plot
   p <- ggplot2::ggplot(toplo, ggplot2::aes(x = Crew, y = aveval)) + 
     ggplot2::geom_bar(stat = 'identity', alpha = 0.7) + 
@@ -43,12 +45,13 @@ show_compplot <- function(dat, site, species = c('Halodule', 'Ruppia', 'Syringod
       title = ttl, 
       subtitle = bquote(italic(.(subttl)))
     ) + 
+    # ggplot2::guides(x = ggplot2::guide_axis(n.dodge = 2)) + 
     ggplot2::scale_y_continuous(expand = c(0, 0)) + 
     ggplot2::theme_bw(base_size = base_size) + 
     ggplot2::theme(
       panel.border = ggplot2::element_blank(),
       axis.title.x = ggplot2::element_blank(), 
-      axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
+      axis.text.x = ggplot2::element_text(size = 8),
       panel.grid.major.x = ggplot2::element_blank(), 
       panel.grid.minor.x = ggplot2::element_blank()
     )
