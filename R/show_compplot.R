@@ -63,7 +63,7 @@ show_compplot <- function(dat, site, species = c('Halodule', 'Ruppia', 'Syringod
     ggplot2::theme(
       panel.border = ggplot2::element_blank(),
       axis.title.x = ggplot2::element_blank(), 
-      axis.text.x = ggplot2::element_text(size = 8),
+      axis.text.x = ggplot2::element_text(size = 10),
       panel.grid.major.x = ggplot2::element_blank(), 
       panel.grid.minor.x = ggplot2::element_blank(), 
       legend.title = ggplot2::element_blank(), 

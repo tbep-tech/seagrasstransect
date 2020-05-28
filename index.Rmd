@@ -11,8 +11,8 @@ runtime: shiny
 knitr::opts_chunk$set(echo = TRUE, warning = F, message = F, echo = F, fig.path = 'figs/', dev.args = list(family = 'serif'), fig.path = 'figures/')
 
 library(tidyverse)
-# library(seagrasstransect)
-devtools::load_all()
+library(seagrasstransect)
+# devtools::load_all()
 library(shiny)
 library(reactable)
 
@@ -41,8 +41,9 @@ output$dlfigs <- downloadHandler(
   content = function(file){
 
     todl <- dat %>% 
-      select(var, Savspecies, Site) %>% 
-      unique
+      select(Savspecies, var, Site) %>% 
+      unique %>% 
+      arrange(Savspecies, var, Site)
 
     pdf(file, width = input$width, height = input$height)
     
@@ -52,7 +53,9 @@ output$dlfigs <- downloadHandler(
       species <- todl[[i, 'Savspecies']]
       varplo <- todl[[i, 'var']]
       
-      show_compplot(dat, site, species, varplo)
+      p <- show_compplot(dat, site, species, varplo)
+      
+      print(p)
       
     }
       
