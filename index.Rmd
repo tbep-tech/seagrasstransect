@@ -11,8 +11,10 @@ runtime: shiny
 knitr::opts_chunk$set(echo = TRUE, warning = F, message = F, echo = F, fig.path = 'figs/', dev.args = list(family = 'serif'), fig.path = 'figures/')
 
 library(tidyverse)
-library(seagrasstransect)
+# library(seagrasstransect)
+devtools::load_all()
 library(shiny)
+library(reactable)
 
 # get data and format
 trnjsn <- read_trnjsn()
@@ -26,6 +28,7 @@ sppopt <- unique(dat$Savspecies)
 # writeLines(styles, 'styles.css')
 ```
 
+## Plot results 
 
 ```{r}
 column(12, 
@@ -90,5 +93,34 @@ plodat <- reactive({
 ```{r, fig.align = 'center'}
 output$plo <- renderPlot(plodat(), height = 600, width = 800)
 plotOutput('plo')
+```
+
+## Crew inventory
+
+```{r}
+totab <- dat %>% 
+  select(`Montoring Agency` = MonitoringAgency, Crew) %>% 
+  unique
+
+reactable(totab, 
+  groupBy = 'Montoring Agency',
+  defaultColDef = colDef(
+    footerStyle = list(fontWeight = "bold"),
+    resizable = TRUE
+    ),
+  columns = list(
+    Crew = colDef(aggregated = JS("
+      function(cellInfo) {
+        // Get comma-separated list of unique values in visible rows
+        var values = cellInfo.subRows.map(function(row) { return row.Crew })
+        var unique = values.reduce(function(obj, v) { obj[v] = true; return obj }, {})
+        return Object.keys(unique).join(', ')
+      }
+    ")
+    )
+  ),
+  filterable = T, 
+  bordered = T
+)
 ```
 
