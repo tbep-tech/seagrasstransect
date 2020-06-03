@@ -1,4 +1,4 @@
-#' Make a bar plot for training group comparisons
+#' Make a bar plot for transect group comparisons
 #'
 #' @param dat data frame returned by \code{\link{form_trnjsn}}
 #' @param site chr string indicating site results to plot

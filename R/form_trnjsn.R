@@ -1,4 +1,4 @@
-#' Format training data from Water Atlas for plotting
+#' Format transect data from Water Atlas for plotting
 #'
 #' @param trnjsn output from \code{\link{read_trnjsn}}
 #'
@@ -11,7 +11,7 @@
 #' trnjsn <- read_trnjsn()
 #' form_trnjsn(trnjsn)
 form_trnjsn <- function(trnjsn){
-
+browser()
   out <- trnjsn %>% 
     tibble::as_tibble() %>% 
     dplyr::rename(IDall = ID) %>% 
@@ -20,7 +20,11 @@ form_trnjsn <- function(trnjsn){
                   matches('BladeLength_|ShootDensity_')) %>% 
     dplyr::select(-BladeLength_Avg, -BladeLength_StdDev, -ShootDensity_Avg, -ShootDensity_StdDev) %>% 
     dplyr::mutate(
-      Abundance = gsub('\\s=.*$', '', Abundance), 
+      Abundance = gsub('\\s=.*$', '', Abundance),
+      Abundance = dplyr::case_when(
+        grepl('[a-z,A-Z]', Abundance) ~ NA_character_,
+        T ~ Abundance
+      ),
       Abundance = as.numeric(Abundance)
     ) %>% 
     tidyr::gather('var', 'val', -Crew, -MonitoringAgency, -Site, -Savspecies) %>% 
