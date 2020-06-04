@@ -84,7 +84,7 @@ show_compplot <- function(dat, site, species = c('Halodule', 'Ruppia', 'Syringod
   if(varplo %in% 'Abundance'){
     
     sumplo <- sumplo %>% 
-      dplyr::filter(sumvar %in% 'Average') 
+      dplyr::filter(sumvar %in% 'Median') 
     
     p <- p + 
       ggplot2::geom_hline(data = sumplo, ggplot2::aes(yintercept = sumval, linetype = sumvar), color = 'red')
