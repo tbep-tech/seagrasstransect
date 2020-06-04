@@ -48,7 +48,8 @@ show_compplot <- function(dat, site, species = c('Halodule', 'Ruppia', 'Syringod
       Median = median(aveval, na.rm = TRUE), 
       Average = mean(aveval, na.rm = TRUE)
     ) %>% 
-    tidyr::gather('sumvar', 'sumval', Median, Average)
+    tidyr::gather('sumvar', 'sumval', Median, Average) %>% 
+    dplyr::mutate(sumvar = factor(sumvar, levels = c('Average', 'Median')))
   
   # plot
   p <- ggplot2::ggplot(toplo, ggplot2::aes(x = grp, y = aveval)) + 
@@ -76,7 +77,8 @@ show_compplot <- function(dat, site, species = c('Halodule', 'Ruppia', 'Syringod
       
     p <- p + 
       ggplot2::geom_errorbar(ggplot2::aes(ymin = aveval - sdval, ymax = aveval + sdval), width = 0.25) +
-      ggplot2::geom_hline(data = sumplo, ggplot2::aes(yintercept = sumval, linetype = sumvar), color = 'red')
+      ggplot2::geom_hline(data = sumplo, ggplot2::aes(yintercept = sumval, linetype = sumvar), color = 'red') + 
+      scale_linetype_manual(values = c(Average = 'solid', Median = 'dotted'))
     
   }
   
@@ -87,7 +89,8 @@ show_compplot <- function(dat, site, species = c('Halodule', 'Ruppia', 'Syringod
       dplyr::filter(sumvar %in% 'Median') 
     
     p <- p + 
-      ggplot2::geom_hline(data = sumplo, ggplot2::aes(yintercept = sumval, linetype = sumvar), color = 'red')
+      ggplot2::geom_hline(data = sumplo, ggplot2::aes(yintercept = sumval, linetype = sumvar), color = 'red') +
+      scale_linetype_manual(values = c(Average = 'solid', Median = 'dotted'))
     
   }
   
