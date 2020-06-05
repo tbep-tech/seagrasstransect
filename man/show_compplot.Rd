@@ -2,7 +2,7 @@
 % Please edit documentation in R/show_compplot.R
 \name{show_compplot}
 \alias{show_compplot}
-\title{Make a bar plot for training group comparisons}
+\title{Make a bar plot for transect group comparisons}
 \usage{
 show_compplot(
   dat,
@@ -30,7 +30,7 @@ show_compplot(
 A \code{\link[ggplot2]{ggplot}} object
 }
 \description{
-Make a bar plot for training group comparisons
+Make a bar plot for transect group comparisons
 }
 \examples{
 trnjsn <- read_trnjsn()

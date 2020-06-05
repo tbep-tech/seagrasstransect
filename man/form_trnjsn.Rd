@@ -2,7 +2,7 @@
 % Please edit documentation in R/form_trnjsn.R
 \name{form_trnjsn}
 \alias{form_trnjsn}
-\title{Format training data from Water Atlas for plotting}
+\title{Format transect data from Water Atlas for plotting}
 \usage{
 form_trnjsn(trnjsn)
 }
@@ -13,7 +13,7 @@ form_trnjsn(trnjsn)
 data frame in long format
 }
 \description{
-Format training data from Water Atlas for plotting
+Format transect data from Water Atlas for plotting
 }
 \examples{
 trnjsn <- read_trnjsn()

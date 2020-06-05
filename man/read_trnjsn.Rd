@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_trnjsn.R
 \name{read_trnjsn}
 \alias{read_trnjsn}
-\title{Import JSON training data from Water Atlas}
+\title{Import JSON transect data from Water Atlas}
 \usage{
 read_trnjsn(
   url = "http://dev.seagrass.wateratlas.usf.edu/api/assessments/training"
@@ -15,8 +15,14 @@ read_trnjsn(
 data frame
 }
 \description{
-Import JSON training data from Water Atlas
+Import JSON transect data from Water Atlas
 }
 \examples{
+
+# get training data by default
 trnjsn <- read_trnjsn()
+
+# import all transect data
+url <- 'http://dev.seagrass.wateratlas.usf.edu/api/assessments/all__use-with-care'
+trnjsn <- read_trnjsn(url)
 }
