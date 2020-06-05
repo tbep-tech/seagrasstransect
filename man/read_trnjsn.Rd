@@ -4,9 +4,8 @@
 \alias{read_trnjsn}
 \title{Import JSON transect data from Water Atlas}
 \usage{
-read_trnjsn(
-  url = "http://dev.seagrass.wateratlas.usf.edu/api/assessments/training"
-)
+
+  read_trnjsn(url = "http://dev.seagrass.wateratlas.usf.edu/api/assessments/training")
 }
 \arguments{
 \item{url}{chr string of API endpoint}
