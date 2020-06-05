@@ -4,14 +4,9 @@
 \alias{show_compplot}
 \title{Make a bar plot for transect group comparisons}
 \usage{
-show_compplot(
-  dat,
-  site,
-  species = c("Halodule", "Ruppia", "Syringodium", "Thalassia"),
-  varplo = c("Abundance", "Blade Length", "Short Shoot Density"),
-  base_size = 18,
-  xtxt = 10
-)
+show_compplot(dat, site, species = c("Halodule", "Ruppia", "Syringodium",
+  "Thalassia"), varplo = c("Abundance", "Blade Length",
+  "Short Shoot Density"), base_size = 18, xtxt = 10)
 }
 \arguments{
 \item{dat}{data frame returned by \code{\link{form_trnjsn}}}

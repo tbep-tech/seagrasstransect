@@ -27,6 +27,7 @@ Imports:
   purrr,
   readxl,
   jsonlite,
+  sf,
   stringr,
   tibble
 Roxygen: list(markdown = TRUE)
