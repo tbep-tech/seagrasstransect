@@ -15,6 +15,9 @@ library(seagrasstransect)
 # devtools::load_all()
 library(shiny)
 library(reactable)
+library(mapview)
+
+data(trnlns)
 
 # get data and format
 trnjsn <- read_trnjsn()
@@ -159,6 +162,12 @@ reactable(totab,
   filterable = T, 
   bordered = T
 )
+```
+
+## Transect locations
+
+```{r, out.width = '100%'}
+mapview(trnlns, zcol = 'MonAgency', homebutton = F, layer.name = 'Monitoring Agency', lwd = 4)
 ```
 
 ## Download 
