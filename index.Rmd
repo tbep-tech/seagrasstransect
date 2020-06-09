@@ -18,6 +18,17 @@ library(reactable)
 library(mapview)
 
 data(trnlns)
+data(trnpts)
+
+monagncy <- trnlns %>% 
+  select(TRAN_ID = Site , MonAgency) %>% 
+  sf::st_set_geometry(NULL)
+
+trnpts <- trnpts %>% 
+  left_join(monagncy, by = 'TRAN_ID') %>% 
+  unite('lonlat', LONG_DD, LAT_DD, sep = ',') %>% 
+  unite('lab', TRANSECT, lonlat, sep = ': ') %>% 
+  mutate(lab = paste0('Transct: ', lab))
 
 # get data and format
 trnjsn <- read_trnjsn()
@@ -167,7 +178,8 @@ reactable(totab,
 ## Transect locations
 
 ```{r, out.width = '100%'}
-mapview(trnlns, zcol = 'MonAgency', homebutton = F, layer.name = 'Monitoring Agency', lwd = 4)
+mapview(trnpts, label = trnpts$lab, zcol = 'MON_AGENCY', lwd = 0, legend = F) + 
+  mapview(trnlns, zcol = 'MonAgency', homebutton = F, layer.name = 'Monitoring Agency', lwd = 4)
 ```
 
 ## Download 
