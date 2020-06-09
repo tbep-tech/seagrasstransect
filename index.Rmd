@@ -28,7 +28,7 @@ trnpts <- trnpts %>%
   left_join(monagncy, by = 'TRAN_ID') %>% 
   unite('lonlat', LONG_DD, LAT_DD, sep = ',') %>% 
   unite('lab', TRANSECT, lonlat, sep = ': ') %>% 
-  mutate(lab = paste0('Transct: ', lab))
+  mutate(lab = paste0('Transect: ', lab))
 
 # get data and format
 trnjsn <- read_trnjsn()
