@@ -178,7 +178,7 @@ reactable(totab,
 ## Transect locations
 
 ```{r, out.width = '100%'}
-mapview(trnpts, label = trnpts$lab, zcol = 'MON_AGENCY', lwd = 0, legend = F) + 
+mapview(trnpts, label = trnpts$lab, zcol = 'MonAgency', lwd = 0, legend = F) + 
   mapview(trnlns, zcol = 'MonAgency', homebutton = F, layer.name = 'Monitoring Agency', lwd = 4)
 ```
 
