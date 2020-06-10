@@ -54,24 +54,6 @@ datsum <- dat %>%
   ungroup %>% 
   na.omit()
 
-psum <- ggplot(datsum, aes(x = Site, y = var, fill = cv)) +
-  facet_wrap(~Savspecies, ncol  = 2) + 
-  scale_x_discrete(expand = c(0, 0)) + 
-  scale_y_discrete(expand = c(0, 0)) +
-  geom_tile(colour = 'black') + 
-  scale_fill_gradientn('CV %', colours = c('lightgreen', 'tomato1')) + 
-  theme_bw() + 
-  theme(
-    strip.background = element_blank(), 
-    # panel.background = element_blank(), 
-    panel.grid = element_blank(), 
-    axis.title.y = element_blank()
-  ) + 
-  labs(
-    subtitle = "Metric variation among sites and species", 
-    caption = 'CV is st. dev. / mean that captures differences among crews'
-  )
-
 # # style file
 # styles <- readLines('https://raw.githubusercontent.com/tbep-tech/css-styling/master/styles.css')
 # writeLines(styles, 'styles.css')
@@ -121,6 +103,30 @@ plodat <- reactive({
   
   out <- show_compplot(dat, sitsel, sppsel, varsel, base_size = 18, xtxt = 13)
   
+  return(out)
+  
+})
+
+sumplodat <- reactive({
+  
+  out <- ggplot(datsum, aes(x = Site, y = var, fill = cv)) +
+    facet_wrap(~Savspecies, ncol  = 2) + 
+    scale_x_discrete(expand = c(0, 0)) + 
+    scale_y_discrete(expand = c(0, 0)) +
+    geom_tile(colour = 'black') + 
+    scale_fill_gradientn('CV %', colours = c('lightgreen', 'tomato1')) + 
+    theme_bw(base_size = 16) + 
+    theme(
+      strip.background = element_blank(), 
+      # panel.background = element_blank(), 
+      panel.grid = element_blank(), 
+      axis.title.y = element_blank()
+    ) + 
+    labs(
+      subtitle = "Metric variation among sites and species", 
+      caption = 'CV is st. dev. / mean that captures differences among crews'
+    )
+
   return(out)
   
 })
@@ -180,10 +186,10 @@ plotOutput('plo')
 
 ### Summary
 
-```{r, fig.align = 'center', height = 6.5, width = 8}
-psum
+```{r, fig.align = 'center'}
+output$sumplodat <- renderPlot(sumplodat(), height = 600, width = 850)
+plotOutput('sumplodat')
 ```
-
 
 ## Crew inventory
 

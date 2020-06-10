@@ -77,7 +77,7 @@ show_compplot <- function(dat, site, species = c('Halodule', 'Ruppia', 'Syringod
       
     p <- p + 
       ggplot2::geom_errorbar(ggplot2::aes(ymin = aveval - sdval, ymax = aveval + sdval), width = 0.25) +
-      ggplot2::geom_hline(data = sumplo, ggplot2::aes(yintercept = sumval, linetype = sumvar), color = 'red') + 
+      ggplot2::geom_hline(data = sumplo, ggplot2::aes(yintercept = sumval, linetype = sumvar), color = 'red', size = 1) + 
       ggplot2::scale_linetype_manual(values = c(Average = 'solid', Median = 'dotted'))
     
   }
@@ -89,7 +89,7 @@ show_compplot <- function(dat, site, species = c('Halodule', 'Ruppia', 'Syringod
       dplyr::filter(sumvar %in% 'Median') 
     
     p <- p + 
-      ggplot2::geom_hline(data = sumplo, ggplot2::aes(yintercept = sumval, linetype = sumvar), color = 'red') +
+      ggplot2::geom_hline(data = sumplo, ggplot2::aes(yintercept = sumval, linetype = sumvar), color = 'red', size = 1) +
       ggplot2::scale_linetype_manual(values = c(Average = 'solid', Median = 'dotted'))
     
   }
