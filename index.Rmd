@@ -8,7 +8,7 @@ runtime: shiny
 # Seagrass transect training {.tabset}
   
 ```{r setup, message = F, warning = F, results = 'hide', echo = FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = F, message = F, echo = F, fig.path = 'figs/', dev.args = list(family = 'serif'), fig.path = 'figures/')
+knitr::opts_chunk$set(echo = TRUE, warning = F, message = F, echo = F, fig.path = 'figs/', fig.path = 'figures/')
 
 library(tidyverse)
 library(seagrasstransect)
@@ -17,6 +17,7 @@ library(shiny)
 library(reactable)
 library(mapview)
 
+# for leaflet map
 data(trnlns)
 data(trnpts)
 
@@ -42,6 +43,35 @@ downloadButtonRmd <- function (outputId, label, class = NULL, ...)  {
                                       class), href = "", target = "_blank", download = NA, 
          icon("download"), label, ...)
 }
+
+# metric summary
+datsum <- dat %>% 
+  dplyr::mutate(
+    grp = paste0(MonitoringAgency, ' (', Crew, ')')
+  ) %>% 
+  group_by(Site, Savspecies, var) %>% 
+  summarise(cv = 100 * sd(aveval, na.rm = T) / mean(aveval, na.rm = T)) %>% 
+  ungroup %>% 
+  na.omit()
+
+psum <- ggplot(datsum, aes(x = Site, y = var, fill = cv)) +
+  facet_wrap(~Savspecies, ncol  = 2) + 
+  scale_x_discrete(expand = c(0, 0)) + 
+  scale_y_discrete(expand = c(0, 0)) +
+  geom_tile(colour = 'black') + 
+  scale_fill_gradientn('CV %', colours = c('lightgreen', 'tomato1')) + 
+  theme_bw() + 
+  theme(
+    strip.background = element_blank(), 
+    # panel.background = element_blank(), 
+    panel.grid = element_blank(), 
+    axis.title.y = element_blank()
+  ) + 
+  labs(
+    subtitle = "Metric variation among sites and species", 
+    caption = 'CV is st. dev. / mean that captures differences among crews'
+  )
+
 # # style file
 # styles <- readLines('https://raw.githubusercontent.com/tbep-tech/css-styling/master/styles.css')
 # writeLines(styles, 'styles.css')
@@ -96,7 +126,7 @@ plodat <- reactive({
 })
 ```
 
-## Plot results 
+## Plot results {.tabset .tabset-pills}
 
 ```{r}
 column(12, 
@@ -141,10 +171,19 @@ column(12,
 )
 ```
 
+### Individual 
+
 ```{r, fig.align = 'center'}
 output$plo <- renderPlot(plodat(), height = 600, width = 850)
 plotOutput('plo')
 ```
+
+### Summary
+
+```{r, fig.align = 'center', height = 6.5, width = 8}
+psum
+```
+
 
 ## Crew inventory
 
