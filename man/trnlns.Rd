@@ -4,7 +4,9 @@
 \name{trnlns}
 \alias{trnlns}
 \title{Seagrass transect locations}
-\format{A \code{sf} LINESTRING object}
+\format{
+A \code{sf} LINESTRING object
+}
 \usage{
 trnlns
 }

@@ -4,7 +4,9 @@
 \name{trnpts}
 \alias{trnpts}
 \title{Seagrass transect starting locations}
-\format{A \code{sf} POINT object}
+\format{
+A \code{sf} POINT object
+}
 \usage{
 trnpts
 }

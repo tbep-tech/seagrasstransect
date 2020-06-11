@@ -4,9 +4,15 @@
 \alias{show_compplot}
 \title{Make a bar plot for transect group comparisons}
 \usage{
-show_compplot(dat, site, species = c("Halodule", "Ruppia", "Syringodium",
-  "Thalassia"), varplo = c("Abundance", "Blade Length",
-  "Short Shoot Density"), base_size = 18, xtxt = 10)
+show_compplot(
+  dat,
+  site,
+  species = c("Halodule", "Ruppia", "Syringodium", "Thalassia"),
+  varplo = c("Abundance", "Blade Length", "Short Shoot Density"),
+  base_size = 18,
+  xtxt = 10,
+  size = 1
+)
 }
 \arguments{
 \item{dat}{data frame returned by \code{\link{form_trnjsn}}}
@@ -20,6 +26,8 @@ show_compplot(dat, site, species = c("Halodule", "Ruppia", "Syringodium",
 \item{base_size}{numeric indicating text scaling size for plot}
 
 \item{xtxt}{numeric indicating text size for x-axis labels}
+
+\item{size}{numeric indicating line size}
 }
 \value{
 A \code{\link[ggplot2]{ggplot}} object
