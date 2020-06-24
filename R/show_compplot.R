@@ -27,7 +27,7 @@ show_compplot <- function(dat, site, species = c('Halodule', 'Ruppia', 'Syringod
   names(lbs) <- c('Abundance', 'Blade Length', 'Short Shoot Density')
   xlb <- lbs[[varplo]]
   ttl <- paste('Site', site)
-  sublbs <- c('Halodule wrightii', 'Ruppia maritima', 'Syringodium filiforme', 'Thalassia testidinum')
+  sublbs <- c('Halodule wrightii', 'Ruppia maritima', 'Syringodium filiforme', 'Thalassia testudinum')
   names(sublbs) <- c('Halodule', 'Ruppia', 'Syringodium', 'Thalassia')
   subttl <- sublbs[[species]]
   
