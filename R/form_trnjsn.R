@@ -47,7 +47,7 @@ form_trnjsn <- function(trnjsn){
       sdval = sd(val, na.rm = T)
     ) %>% 
     dplyr::ungroup() %>% 
-    filter(Savspecies %in% c('Halodule', 'Halophila', 'Ruppia', 'Syringodium', 'Thalassia'))
+    dplyr::filter(Savspecies %in% c('Halodule', 'Halophila', 'Ruppia', 'Syringodium', 'Thalassia'))
   
   return(out)
   
