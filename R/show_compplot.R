@@ -15,7 +15,7 @@
 #' trnjsn <- read_trnjsn()
 #' dat <- form_trnjsn(trnjsn)
 #' show_compplot(dat, site = '1', species = 'Halodule', varplo = 'Abundance')
-show_compplot <- function(dat, site, species = c('Halodule', 'Ruppia', 'Syringodium', 'Thalassia'), 
+show_compplot <- function(dat, site, species = c('Halodule', 'Halophila', 'Ruppia', 'Syringodium', 'Thalassia'), 
                           varplo = c('Abundance', 'Blade Length', 'Short Shoot Density'), base_size = 18, xtxt = 10, size = 1){
 
   # arguments
