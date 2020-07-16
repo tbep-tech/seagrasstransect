@@ -7,7 +7,7 @@
 show_compplot(
   dat,
   site,
-  species = c("Halodule", "Ruppia", "Syringodium", "Thalassia"),
+  species = c("Halodule", "Halophila", "Ruppia", "Syringodium", "Thalassia"),
   varplo = c("Abundance", "Blade Length", "Short Shoot Density"),
   base_size = 18,
   xtxt = 10,
