@@ -1,0 +1,89 @@
+---
+output: 
+  html_document:
+  code_folding: hide
+css: styles.css
+---
+  
+```{r}
+library(tbeptools)
+library(tidyverse)
+library(lubridate)
+
+data(trnpts)
+data(tbsegshed)
+
+otbshed <- tbsegshed %>% 
+  filter(bay_segment %in% 'OTB')
+
+otbpts <- trnpts[otbshed, ]
+trndat <- read_trnjsn(training = F) %>% 
+  anlz_trnjsn(training = F)
+
+# get otb transect, fall period, positive depth as neg, abundance only, complete spp by site, date, transect combos
+dat <- trndat %>% 
+  mutate(
+    mo = month(Date)
+  ) %>% 
+  filter(Transect %in% otbpts$TRAN_ID) %>% 
+  filter(mo >= 7 & mo <=12) %>% 
+  mutate(
+    Depth = as.numeric(Depth),
+    Depth = case_when(
+      sign(Depth) == 1 ~ -1 * Depth, 
+      T ~ Depth
+    ), 
+    Savspecies = case_when(
+      grepl('^AA', Savspecies) ~ 'AA',
+      grepl('^DA', Savspecies) ~ 'DA',
+      T ~ Savspecies
+    )
+  ) %>% 
+  filter(var %in% 'Abundance') %>% 
+  select(Date, Transect, Site, Depth, Savspecies, bb = aveval) %>% 
+  group_by(Date, Transect, Site, Depth, Savspecies) %>% 
+  summarise(bb = mean(bb, na.rm = T)) %>% 
+  ungroup %>% 
+  complete(Savspecies, nesting(Date, Transect, Site, Depth), fill = list(bb = 0)) %>% 
+  arrange(Transect, Site, Savspecies)
+
+##
+# get spp freq occurrence
+
+# mean placements for each tran
+meanplc <- dat %>% 
+  select(Transect, Date, Site) %>% 
+  unique %>% 
+  group_by(Date, Transect) %>% 
+  summarise(nsit = n()) %>% 
+  group_by(Transect) %>% 
+  summarise(nsit = mean(nsit, na.rm = T)) %>% 
+  ungroup
+
+covest <- dat %>% 
+  group_by(Date, Transect, Savspecies) %>% 
+  nest() %>% 
+  left_join(meanplc, by = 'Transect') %>% 
+  mutate(
+    est = purrr::pmap(list(data, nsit), function(data, nsit){
+      
+      foest <- sum(data$bb > 0, na.rm = T) / nrow(data)#nsit    
+      bbest <- sum(data$bb, na.rm = T) / nrow(data) #nsit
+      out <- tibble(foest = foest, bbest = bbest)
+      
+      return(out)
+      
+    })
+  ) %>% 
+  select(-data) %>% 
+  unnest(est) %>% 
+  filter(Savspecies != 'No Cover')
+ 
+ggplot(covest, aes(x = Date, y = bbest, group = Savspecies, color = Savspecies, fill = Savspecies)) + 
+  geom_area(stat = 'identity') + 
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1), 
+    axis.title.x = element_blank()
+  ) + 
+  facet_wrap(~Transect, ncol = 1)
+```
