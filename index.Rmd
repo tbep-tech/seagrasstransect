@@ -31,8 +31,8 @@ trnpts <- trnpts %>%
   mutate(lab = paste0('Transect: ', lab))
 
 # get data and format
-trnjsn <- read_trnjsn()
-dat <- anlz_trnjsn(trnjsn)
+trnjsn <- read_trnjsn(training = TRUE)
+dat <- anlz_trnjsn(trnjsn, training = TRUE)
 
 # get choices for selection
 sppopt <- unique(dat$Savspecies)
@@ -98,9 +98,11 @@ plodat <- reactive({
   sitsel <- input$sitsel
   varsel <- input$varsel
   
-  req(varsel)
-  
   out <- show_compplot(dat, sitsel, sppsel, varsel, base_size = 18, xtxt = 13)
+  
+  validate(
+    need(nrow(out$data) > 0, 'No data to plot')
+  )
   
   return(out)
   
@@ -136,43 +138,8 @@ sumplodat <- reactive({
 ```{r}
 column(12, 
   column(4, selectInput('sppsel', 'Select species:', choices = sppopt)),
-  column(4,
-    renderUI({
-      
-      # inputs
-      sppsel <- input$sppsel
-
-      tosel <- dat %>% 
-        filter(Savspecies %in% sppsel) %>% 
-        pull(Site) %>% 
-        unique %>% 
-        sort
-      
-      selectInput('sitsel', 'Select site:', choices = tosel)
-      
-    })
-  ),
-  column(4, 
-    renderUI({
-      
-      # inputs
-      sppsel <- input$sppsel
-      sitsel <- input$sitsel
-      
-      req(sitsel)
-  
-
-      tosel <- dat %>% 
-        filter(Savspecies %in% sppsel) %>% 
-        filter(Site %in% sitsel) %>% 
-        pull(var) %>%  
-        unique
-      
-      selectInput('varsel', 'Select variable:', choices =  tosel)
-            
-    })     
-  )
-
+  column(4, selectInput('sitsel', 'Select site:', choices = sort(unique(dat$Site)))),
+  column(4, selectInput('varsel', 'Select variable:', choices =  unique(dat$var)))
 )
 ```
 
