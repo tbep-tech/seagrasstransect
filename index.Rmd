@@ -11,8 +11,7 @@ runtime: shiny
 knitr::opts_chunk$set(echo = TRUE, warning = F, message = F, echo = F, fig.path = 'figs/', fig.path = 'figures/')
 
 library(tidyverse)
-library(seagrasstransect)
-# devtools::load_all()
+library(tbeptools)
 library(shiny)
 library(reactable)
 library(mapview)
@@ -33,7 +32,7 @@ trnpts <- trnpts %>%
 
 # get data and format
 trnjsn <- read_trnjsn()
-dat <- form_trnjsn(trnjsn)
+dat <- anlz_trnjsn(trnjsn)
 
 # get choices for selection
 sppopt <- unique(dat$Savspecies)

@@ -1,7 +1,0 @@
-globalVariables(c('Abundance', 'Agency', 'Savspecies', 'Site', 'aveval', 'matches', 'var', 'sdval', 'val', 
-                  'BladeLength_Avg', 'BladeLength_StdDev', 'Crew', 'ID', 'ShootDensity_Avg',
-                  'ShootDensity_StdDev', 'Species', 'SpeciesAbundance', 'Transect', 'Average', 'Median', 
-                  'MonitoringAgency', 'grp', 'sumval', 'sumvar'))
-
-#' @importFrom stats median sd
-NULL
