@@ -89,80 +89,23 @@ covest <- otbtrn %>%
   ungroup %>% 
   filter(Savspecies != 'No Cover') %>% 
   mutate(
+    mo = month(Date), 
+    yr = year(Date), 
+    dy = 15,
     Savspecies = factor(Savspecies, levels = rev(c('AA', 'DA', 'Halodule', 'Thalassia', 'Syringodium', 'Ruppia', 'Halophila spp.')))
-  )
-
-bbchg <- covest %>% 
-  group_by(Transect) %>% 
-  nest() %>%
-  mutate(
-    pout = purrr::pmap(list(Transect, data), function(Transect, data){
-
-      plot_ly(data, x = ~as.character(Date), y = ~bbest, color = ~Savspecies, stackgroup = 'one', type = 'scatter', mode = 'none') %>%
-        layout(
-          title = Transect,
-          yaxis = list(title = 'Mean Braun-Blanquet scores by species'), #, gridcolor = '#FFFFFF'),
-          xaxis = list(title = NA, gridcolor = '#FFFFFF', tickfont = list(size = 8), tickangle = 45),
-          barmode = 'stack',
-          showlegend = T
-        )
-    
-      # out <- ggplot() + ggtitle(Transect)
-      
-      # return(out)
-       
-    })
   ) %>% 
-  select(-data) %>% 
-  deframe()
-
-fochg <- covest %>% 
-  group_by(Transect) %>% 
-  nest() %>%
-  mutate(
-    pout = purrr::pmap(list(Transect, data), function(Transect, data){
-
-      plot_ly(data, x = ~as.character(Date), y = ~foest, color = ~Savspecies, stackgroup = 'one', type = 'scatter', mode = 'none', groupnorm = 'percent') %>%
-        layout(
-          title = Transect,
-          yaxis = list(title = 'Relative frequency occurrence by species'), #, gridcolor = '#FFFFFF'),
-          xaxis = list(title = NA, gridcolor = '#FFFFFF', tickfont = list(size = 8), tickangle = 45),
-          barmode = 'stack',
-          showlegend = T
-        )
-    
-      # out <- ggplot() + ggtitle(Transect)
-      
-      # return(out)
-       
-    })
+  group_by(Savspecies, mo, yr, dy, Transect) %>% 
+  summarise(
+    foest = mean(foest), 
+    bbest = mean(bbest)
   ) %>% 
-  select(-data) %>% 
-  deframe()
+  ungroup() %>% 
+  unite('Date', yr, mo, dy, sep = '-') %>% 
+  mutate(Date = ymd(Date))
 
 m <- mapview(otbpts, homebutton = F, layer.name = 'Transects', col.regions = 'darkgreen') +
   mapview(st_as_sf(wqstat, coords = c('Longitude', 'Latitude'), crs = st_crs(tbshed)), homebutton = F, layer.name = 'EPCHC stations', col.regions = 'darkblue') 
-  # .@map %>% 
-m <- m@map %>% 
-  clearMarkers() %>% 
-  addLabelOnlyMarkers(data = otbpts, ~LONG_DD, ~LAT_DD, label = ~TRAN_ID, labelOptions = labelOptions(
-    noHide = T, 
-    direction = 'auto', 
-    textOnly = T,
-    textsize = '15px',
-    style = list(
-      'color' = 'darkgreen'
-    )
-  )) %>% 
-  addLabelOnlyMarkers(data = wqstat, ~Longitude, ~Latitude, label = ~epchc_station, labelOptions = labelOptions(
-    noHide = T, 
-    direction = 'auto', 
-    textOnly = T,
-    textsize = '15px',
-    style = list(
-      'color' = 'darkblue'
-    )
-  ))
+m <- m@map
 ```
 
 ```{r reactives}
@@ -180,8 +123,8 @@ mapsel <- reactive({
   
   out <- m %>% 
     clearMarkers() %>% 
-    addMarkers(data = trnpt, ~LONG_DD, ~LAT_DD) %>% 
-    addMarkers(data = wqstpt, ~Longitude, ~Latitude) %>% 
+    addCircles(data = trnpt, ~LONG_DD, ~LAT_DD, color = 'darkgreen', weight = 20) %>% 
+    addCircles(data = wqstpt, ~Longitude, ~Latitude, color = 'darkblue', weight = 20) %>% 
     addLabelOnlyMarkers(data = otbpts, ~LONG_DD, ~LAT_DD, label = ~TRAN_ID, labelOptions = labelOptions(
       noHide = T, 
       direction = 'auto', 
@@ -205,18 +148,24 @@ mapsel <- reactive({
   
 })
 
-# wq plot
-wqplo <- reactive({
+# observed data plot
+obsplo <- reactive({
   
   # input
   wqst <- input$wqst
+  sgty <- input$sgty
+  trn <- input$trn
   
-   # data to plot
-  toplo <- epcdata %>% 
+  ##
+  # data to plot
+  
+  # wq data
+  wqplo <- epcdata %>% 
     filter(epchc_station %in% wqst) %>% 
     select(Date = SampleTime, sd_raw_m, sd_q, chla) %>% 
     mutate(Date = as.Date(Date))
   
+  # algae data
   algplo <- algdat %>% 
     filter(epchc_station %in% wqst) %>% 
     group_by(yrqrt, name) %>%
@@ -225,82 +174,80 @@ wqplo <- reactive({
     mutate(
       name = factor(name, levels = algnms, labels = algnms)
       )
+
+  # seagrass data
+  sglab <- 'BB Abundance'
+  sgval <- 'bbest'
+  if(sgty == 'Freq. Occ.'){
+    sglab <- 'Freq. Occ.'
+    sgval <- 'foest'
+  }
+  sgplo <- covest %>% 
+    filter(Transect %in% trn) %>% 
+    rename(val = !!sgval)
+  
+  ##
+  # plots
+
   # chl plot
-  p1 <- ggplot(toplo, aes(x = Date, y = chla)) + 
-    geom_line(aes(colour = 'Chlorophyll-a')) + 
-    scale_colour_manual(values = "#427355") + 
-    # geom_point(colour = "#427355", size = 0.5) +
-    # scale_y_log10() + 
-    labs(
-      y = 'Concentration (ug/L)', 
-      x = NULL
-      ) +
-    pthm + 
-    theme(
-      legend.title = element_blank()
+  p1 <- plot_ly(wqplo, x = ~Date, y = ~chla, name = 'Chlorophyll-a', type= 'scatter', mode = 'lines', line = list(color = '#427355')) %>% 
+    layout(
+      yaxis = list(title = 'Conc. (ug/L)'),
+      xaxis = list(gridcolor = '#FFFFFF'),
+      showlegend = T, 
+      font = list(family = fml)
     )
   
   # secchi plot
-  p2 <- ggplot() + 
-    geom_line(data = toplo, aes(x = Date, y = sd_raw_m, colour = 'Secchi depth')) + 
-    labs(
-      y = 'Depth (m)', 
-      x = NULL, 
-      title = paste0('Station ', wqst)
-      ) + 
-    scale_colour_manual(values = "#0047FE") +
-    pthm +
-    theme(
-      legend.title = element_blank()
+  p2 <- plot_ly(wqplo, x = ~Date) %>% 
+    add_trace(y = ~sd_raw_m, name = 'Secchi depth', type= 'scatter', mode = 'lines', line = list(color = '#0047FE')) %>% 
+    layout(
+      yaxis = list(title = 'Depth (m)'),
+      xaxis = list(gridcolor = '#FFFFFF'),
+      showlegend = T, 
+      font = list(family = fml)
     )
   
-  if(any(!toplo$sd_q))
-    p2 <- p2 +
-      geom_point(data = toplo[!toplo$sd_q, ], aes(x = Date, y = sd_raw_m, colour = 'Secchi on bottom'), size = 1.5) +
-      scale_colour_manual(values = c('#0047FE', 'tomato1'))
-  p1 <- ggplotly(p1, dynamicTicks = T)
-  p2 <- ggplotly(p2, dynamicTicks = T)
+  if(any(!wqplo$sd_q))
+    p2 <- p2 %>% 
+      add_trace(data = wqplo[!wqplo$sd_q, ], x = ~Date, y = ~sd_raw_m, name = 'Secchi on bottom', type = 'scatter', mode = 'marker', marker = list(color = "#FF6347", size = 8))
+  
+  # algae plot
   p3 <-  plot_ly(algplo, x = ~ yrqrt, y= ~count, color = ~name, text = ~paste0(name, ', ', yrqrt), hoverinfo = 'text') %>% 
     add_bars() %>% 
     layout(
-      yaxis = list(title = 'Phytoplankton cell count (0.1/ml)', gridcolor = '#FFFFFF'),
+      yaxis = list(title = 'Phyto. cell count (0.1/ml)', gridcolor = '#FFFFFF'),
       barmode = 'stack',
       showlegend = T, 
-      font = list(family = fml)#, 
-      # plot_bgcolor = '#ECECEC'
+      font = list(family = fml)
     )
   
-  out <- subplot(p3, p1, p2, nrows = 3, shareX = T, titleY = T, which_layout = 1) %>%
+  # seagrass plot
+  p4 <- plot_ly(sgplo, x = ~Date, y = ~val, color = ~Savspecies, stackgroup = 'one', type = 'scatter', mode = 'none') 
+  if(sgty == 'Freq. Occ.')
+      p4 <- plot_ly(sgplo, x = ~Date, y = ~val, color = ~Savspecies, stackgroup = 'one', type = 'scatter', mode = 'none', groupnorm = 'percent') 
+
+  p4 <- p4 %>% 
     layout(
-      title = paste('Station', wqst),
+      yaxis = list(title = sglab),
+      xaxis = list(title = NA, gridcolor = '#FFFFFF', tickfont = list(size = 8), tickangle = 45),
+      barmode = 'stack',
+      showlegend = T, 
+      legend = list(title = list(text = 'Seagrass'))
+    )
+  
+  out <- subplot(p3, p1, p2, p4, nrows = 4, shareX = T, titleY = T, which_layout = 1) %>%
+    layout(
+      # title = paste0('Station ', wqst, ', Transect ', trn),
       # legend = list(font = list(size = 16)), 
       yaxis = list(gridcolor = '#ECECEC'),
       font = list(family = fml),
       plot_bgcolor = '#FFFFFF'
-      # xaxis = list(
-      #   domain = c(0.02, 1)
-      # )
     )
   
   return(out)
   
   
-  
-})
-
-# abundance selection
-sgplo <- reactive({
-  
-  # input
-  trn <- input$trn
-  sgty <- input$sgty
-  
-  
-  out <- bbchg[[trn]]
-  if(sgty == 'Freq. Occ.')
-    out <- fochg[[trn]]
-  
-  return(out)
   
 })
 ```
@@ -314,22 +261,17 @@ leafletOutput('mapsel')
 
 ```{r}
 column(12,
-  column(4, selectInput('trn', 'Select transect:', choices = levels(covest$Transect))),
   column(4, selectInput('wqst', 'Select water quality station:', choices = sort(unique(wqstat$epchc_station)))), 
+  column(4, selectInput('trn', 'Select transect:', choices = levels(covest$Transect))),
   column(4, selectInput('sgty', 'Select seagrass plot type:', choices = c('BB average', 'Freq. Occ.')))
 )
 ```
 
-## Species change over time
+<br>
+<br>
+<br>
 
 ```{r}
-output$sgplo <- renderPlotly(sgplo())
-plotlyOutput('sgplo')
-```
-
-## Water quality data
-
-```{r}
-output$wqplo <- renderPlotly(wqplo())
-plotlyOutput('wqplo', height = "700px")
+output$obsplo <- renderPlotly(obsplo())
+plotlyOutput('obsplo', height = "1000px")
 ```
