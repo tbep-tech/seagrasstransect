@@ -103,6 +103,15 @@ covest <- otbtrn %>%
   unite('Date', yr, mo, dy, sep = '-') %>% 
   mutate(Date = ymd(Date))
 
+# epc annual averages
+epcann <- epcdata %>% 
+  filter(bay_segment %in% 'OTB') %>% 
+  select(epchc_station, yr, tn,sd_raw_m, chla, Sal_Mid_ppth) %>% 
+  group_by(epchc_station, yr) %>% 
+  summarise_if(is.numeric, mean, na.rm = T) %>% 
+  gather('var', 'val', -epchc_station, -yr)
+
+# base map
 m <- mapview(otbpts, homebutton = F, layer.name = 'Transects', col.regions = 'darkgreen') +
   mapview(st_as_sf(wqstat, coords = c('Longitude', 'Latitude'), crs = st_crs(tbshed)), homebutton = F, layer.name = 'EPCHC stations', col.regions = 'darkblue') 
 m <- m@map
@@ -179,7 +188,7 @@ obsplo <- reactive({
   sglab <- 'BB Abundance'
   sgval <- 'bbest'
   if(sgty == 'Freq. Occ.'){
-    sglab <- 'Freq. Occ.'
+    sglab <- 'Freq. Occ. (%)'
     sgval <- 'foest'
   }
   sgplo <- covest %>% 
@@ -230,12 +239,13 @@ obsplo <- reactive({
   p4 <- p4 %>% 
     layout(
       yaxis = list(title = sglab),
-      xaxis = list(title = NA, gridcolor = '#FFFFFF', tickfont = list(size = 8), tickangle = 45),
+      xaxis = list(title = NA, gridcolor = '#FFFFFF'),
       barmode = 'stack',
       showlegend = T, 
-      legend = list(title = list(text = 'Seagrass'))
+      legend = list(title = list(text = 'Seagrass')),
+      shapes = vrtline_fun(sgplo, sgty)
     )
-  
+
   out <- subplot(p3, p1, p2, p4, nrows = 4, shareX = T, titleY = T, which_layout = 1) %>%
     layout(
       # title = paste0('Station ', wqst, ', Transect ', trn),
@@ -247,12 +257,105 @@ obsplo <- reactive({
   
   return(out)
   
+})
+
+# sg trend matrix
+sgtrnd <- reactive({
   
+  # input
+  yrsl <- input$yrsl
+  
+  trndest <- covest %>% 
+    mutate(
+      yr = year(Date)
+    ) %>% 
+    filter(yr >= yrsl[1] & yr <= yrsl[2]) %>% 
+    group_by(Savspecies, Transect) %>% 
+    nest %>% 
+    mutate(
+      trnd = purrr::map(data, function(data){
+        
+        mod <- lm(bbest ~ Date, data)
+        
+        slo <- coefficients(mod)[2]
+        f <- summary(mod)$fstatistic
+        p <- pf(f[1],f[2],f[3],lower.tail=F)
+        attributes(p) <- NULL
+        
+        p <- p_ast(p)
+        
+        out <- tibble(slo = slo, pval = p)
+        
+        return(out)
+        
+      })
+    ) %>% 
+    select(-data) %>% 
+    unnest(trnd)
+
+  p <- ggplot(trndest, aes(x = Savspecies, y = Transect, fill = slo)) + 
+    geom_tile(colour = 'grey') +
+    geom_text(aes(label = pval)) + 
+    scale_x_discrete(expand = c(0, 0)) + 
+    scale_y_discrete(expand = c(0, 0)) + 
+    scale_fill_gradient2('chg/yr', low = 'lightblue', mid = 'white', high = 'lightgreen') + 
+    theme(axis.title = element_blank())
+  
+  out <- ggplotly(p)
+
+  return(out)
+  
+})
+
+# wq trend matrix
+wqtrnd <- reactive({
+  
+  # input
+  yrsl <- input$yrsl
+
+  trndest <- epcann %>% 
+    filter(yr >= yrsl[1] & yr <= yrsl[2]) %>% 
+    group_by(var, epchc_station) %>% 
+    nest %>% 
+    mutate(
+      trnd = purrr::map(data, function(data){
+        
+        mod <- lm(val ~ yr, data)
+        
+        slo <- coefficients(mod)[2]
+        f <- summary(mod)$fstatistic
+        p <- pf(f[1],f[2],f[3],lower.tail=F)
+        attributes(p) <- NULL
+        
+        p <- p_ast(p)
+        
+        out <- tibble(slo = slo, pval = p)
+        
+        return(out)
+        
+      })
+    ) %>% 
+    select(-data) %>% 
+    unnest(trnd)
+
+  p <- ggplot(trndest, aes(x = var, y = factor(epchc_station), fill = slo)) + 
+    geom_tile(colour = 'grey') +
+    geom_text(aes(label = pval)) + 
+    scale_x_discrete(expand = c(0, 0)) + 
+    scale_y_discrete(expand = c(0, 0)) + 
+    scale_fill_gradient2('chg/yr', low = 'lightblue', mid = 'white', high = 'lightgreen') + 
+    theme(axis.title = element_blank())
+  
+  out <- ggplotly(p)
+
+  return(out)
   
 })
 ```
 
-# Old Tampa Bay Seagrass evaluation
+# Old Tampa Bay Seagrass evaluation {.tabset}
+
+## Observed changes
 
 ```{r, out.width = '100%'}
 output$mapsel <- renderLeaflet(mapsel())
@@ -274,4 +377,32 @@ column(12,
 ```{r}
 output$obsplo <- renderPlotly(obsplo())
 plotlyOutput('obsplo', height = "1000px")
+```
+
+## Trends and correlations {.tabset .tabset-pills}
+
+```{r}
+column(12, 
+  column(6, sliderInput('yrsl', 'Select date range:', min = 1998, max = 2019, value = c(1998, 2019), sep = '', width = 600))
+)
+```
+
+<br>
+<br>
+<br>
+
+### Water quality
+
+```{r}
+output$wqtrnd <- renderPlotly(wqtrnd())
+plotlyOutput('wqtrnd', height = 600, width = 600)
+```
+
+### Phytoplankton
+
+### Seagrass abundance
+
+```{r}
+output$sgtrnd <- renderPlotly(sgtrnd())
+plotlyOutput('sgtrnd', height = 600, width = 600)
 ```
