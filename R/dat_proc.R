@@ -42,7 +42,41 @@ otbtrn <- trndat %>%
   complete(Savspecies, nesting(Date, Transect, Site, Depth, SeagrassEdge), fill = list(bb = 0)) %>% 
   arrange(Transect, Site, Savspecies)
 
-save(otbtrn, file = here::here('data', 'otbtrn.RData'), compress = 'xz')
+# coverage estimates
+covest <- otbtrn %>% 
+  group_by(Date, Transect, Savspecies) %>% 
+  nest() %>% 
+  mutate(
+    est = purrr::map(data, function(data){
+      
+      foest <- sum(data$bb > 0, na.rm = T) / nrow(data)   
+      bbest <- sum(data$bb, na.rm = T) / nrow(data)
+      out <- tibble(foest = foest, bbest = bbest)
+      
+      return(out)
+      
+    })
+  ) %>% 
+  select(-data) %>% 
+  unnest(est) %>%
+  ungroup %>% 
+  filter(Savspecies != 'No Cover') %>% 
+  mutate(
+    mo = month(Date), 
+    yr = year(Date), 
+    dy = 15,
+    Savspecies = factor(Savspecies, levels = rev(c('AA', 'DA', 'Halodule', 'Thalassia', 'Syringodium', 'Ruppia', 'Halophila spp.')))
+  ) %>% 
+  group_by(Savspecies, mo, yr, dy, Transect) %>% 
+  summarise(
+    foest = mean(foest), 
+    bbest = mean(bbest)
+  ) %>% 
+  ungroup() %>% 
+  unite('Date', yr, mo, dy, sep = '-') %>% 
+  mutate(Date = ymd(Date))
+
+save(covest, file = here::here('data', 'covest.RData'), compress = 'xz')
 
 # algae data --------------------------------------------------------------
 
@@ -51,7 +85,57 @@ xlsx <- '~/Desktop/phyto_data.xlsx'
 
 # load and assign to object
 algdat <- read_importphyto(xlsx, download_latest = T) %>%
-  filter(yr < 2020)
+  filter(yr < 2020) %>% 
+  filter(yr >= 1998)
 
 save(algdat, file = here::here('data', 'algdat.RData'), compress = 'xz')
 
+# all data, annually averaged ---------------------------------------------
+
+data(algdat)
+data(covest)
+
+# algdata annual averages, average across months
+algann <- algdat %>% 
+  filter(epchc_station %in% unique(epcann$epchc_station)) %>% 
+  group_by(yr, name, epchc_station) %>%
+  summarise(val = mean(count, na.rm = T)) %>% 
+  ungroup %>% 
+  mutate(
+    name = factor(name, levels = algnms, labels = algnms)
+  ) %>% 
+  rename(station = epchc_station, val = count, var = name) %>% 
+  mutate(
+    dat = 'alg',
+    station = as.character(station)
+  )
+
+# SG coverage averaged to year
+covann <- covest %>% 
+  select(-foest) %>% 
+  rename(var = Savspecies, station = Transect) %>% 
+  mutate(yr = year(Date)) %>% 
+  group_by(var, yr, station) %>% 
+  summarise(val = mean(bbest, na.rm = T)) %>% 
+  ungroup %>% 
+  mutate(
+    dat = 'cov',
+    station = as.character(station)
+  )
+
+# epc annual averages
+epcann <- epcdata %>% 
+  filter(bay_segment %in% 'OTB') %>% 
+  select(epchc_station, yr, tn,sd_raw_m, chla, Sal_Mid_ppth) %>% 
+  group_by(epchc_station, yr) %>% 
+  summarise_if(is.numeric, mean, na.rm = T) %>% 
+  gather('var', 'val', -epchc_station, -yr) %>% 
+  rename(station = epchc_station) %>% 
+  mutate(
+    dat = 'epc',
+    station = as.character(station)
+  )
+
+allann <- bind_rows(algann, covann, epcann)
+
+save(allann, file = 'data/allann.RData', compress = 'xz')

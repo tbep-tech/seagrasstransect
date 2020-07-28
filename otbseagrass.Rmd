@@ -23,8 +23,9 @@ source('R/funcs.R')
 
 data(trnpts)
 data(tbsegshed)
-data(otbtrn)
+data(covest)
 data(algdat)
+data(allann)
 
 loadfonts(device = 'pdf', quiet = T)
 if(Sys.info()[1] == 'Windows')
@@ -39,9 +40,6 @@ otbpts <- trnpts[otbshed, ]
 wqstat <- stations %>% 
   filter(bay_segment %in% 'OTB')
 
-algdat <- algdat %>% 
-  filter(yr >= 1998)
-
 epcdata <- epcdata %>% 
   filter(yr >= 1998) %>% 
   mutate(
@@ -51,9 +49,11 @@ epcdata <- epcdata %>%
     )
   )
 
+# for factor levels
 algnms <- c('Bacillariophyta', 'Cyanobacteria', 'Karenia brevis', 'Pseudo-nitzschia pungens', 'Pseudo-nitzschia sp.', 'Pyrodinium bahamense', 'Tripos hircus', 'other')
 cols <- pal_alg(algnms)
 names(cols) <- algnms
+savnms <- c('AA', 'DA', 'Halodule', 'Thalassia', 'Syringodium', 'Ruppia', 'Halophila spp.')
 
 # minor theme tweaks
 pthm <- theme(
@@ -66,50 +66,6 @@ pthm <- theme(
     # panel.grid.major=element_blank(),
     panel.background = element_rect(fill = '#ECECEC')
     ) 
-
-##
-# get spp freq occurrence
-
-covest <- otbtrn %>% 
-  group_by(Date, Transect, Savspecies) %>% 
-  nest() %>% 
-  mutate(
-    est = purrr::map(data, function(data){
-      
-      foest <- sum(data$bb > 0, na.rm = T) / nrow(data)   
-      bbest <- sum(data$bb, na.rm = T) / nrow(data)
-      out <- tibble(foest = foest, bbest = bbest)
-      
-      return(out)
-      
-    })
-  ) %>% 
-  select(-data) %>% 
-  unnest(est) %>%
-  ungroup %>% 
-  filter(Savspecies != 'No Cover') %>% 
-  mutate(
-    mo = month(Date), 
-    yr = year(Date), 
-    dy = 15,
-    Savspecies = factor(Savspecies, levels = rev(c('AA', 'DA', 'Halodule', 'Thalassia', 'Syringodium', 'Ruppia', 'Halophila spp.')))
-  ) %>% 
-  group_by(Savspecies, mo, yr, dy, Transect) %>% 
-  summarise(
-    foest = mean(foest), 
-    bbest = mean(bbest)
-  ) %>% 
-  ungroup() %>% 
-  unite('Date', yr, mo, dy, sep = '-') %>% 
-  mutate(Date = ymd(Date))
-
-# epc annual averages
-epcann <- epcdata %>% 
-  filter(bay_segment %in% 'OTB') %>% 
-  select(epchc_station, yr, tn,sd_raw_m, chla, Sal_Mid_ppth) %>% 
-  group_by(epchc_station, yr) %>% 
-  summarise_if(is.numeric, mean, na.rm = T) %>% 
-  gather('var', 'val', -epchc_station, -yr)
 
 # base map
 m <- mapview(otbpts, homebutton = F, layer.name = 'Transects', col.regions = 'darkgreen') +
@@ -259,23 +215,25 @@ obsplo <- reactive({
   
 })
 
-# sg trend matrix
-sgtrnd <- reactive({
+# trend estimates for selected years
+trnds <- reactive({
   
   # input
   yrsl <- input$yrsl
-  
-  trndest <- covest %>% 
-    mutate(
-      yr = year(Date)
-    ) %>% 
+
+  out <- allann %>% 
     filter(yr >= yrsl[1] & yr <= yrsl[2]) %>% 
-    group_by(Savspecies, Transect) %>% 
+    group_by(dat, station, var) %>% 
     nest %>% 
     mutate(
       trnd = purrr::map(data, function(data){
+
+        mod <- try({lm(val ~ yr, data)})
         
-        mod <- lm(bbest ~ Date, data)
+        if(inherits(mod, 'try-error') | nrow(data) < 2){
+          out <- tibble(slo = NA, pval = NA)
+          return(out)
+        }
         
         slo <- coefficients(mod)[2]
         f <- summary(mod)$fstatistic
@@ -291,15 +249,33 @@ sgtrnd <- reactive({
       })
     ) %>% 
     select(-data) %>% 
-    unnest(trnd)
+    unnest(trnd) %>% 
+    na.omit()
+browser()
+  return(out)
+  
+})
 
-  p <- ggplot(trndest, aes(x = Savspecies, y = Transect, fill = slo)) + 
+# sg trend matrix
+sgtrndplo <- reactive({
+  
+  # input
+  trnds <- trnds()
+
+  toplo <- trnds %>% 
+    filter(dat %in% 'cov') %>% 
+    mutate(var = factor(var, levels = rev(savnms)))
+
+  p <- ggplot(toplo, aes(x = var, y = station, fill = slo)) + 
     geom_tile(colour = 'grey') +
     geom_text(aes(label = pval)) + 
     scale_x_discrete(expand = c(0, 0)) + 
-    scale_y_discrete(expand = c(0, 0)) + 
+    scale_y_discrete('Transect', expand = c(0, 0)) + 
     scale_fill_gradient2('chg/yr', low = 'lightblue', mid = 'white', high = 'lightgreen') + 
-    theme(axis.title = element_blank())
+    theme(
+      axis.title.x = element_blank(),
+      axis.text.x = element_text(angle = 30)
+      )
   
   out <- ggplotly(p)
 
@@ -308,43 +284,52 @@ sgtrnd <- reactive({
 })
 
 # wq trend matrix
-wqtrnd <- reactive({
+wqtrndplo <- reactive({
   
   # input
-  yrsl <- input$yrsl
+  trnds <- trnds()
 
-  trndest <- epcann %>% 
-    filter(yr >= yrsl[1] & yr <= yrsl[2]) %>% 
-    group_by(var, epchc_station) %>% 
-    nest %>% 
-    mutate(
-      trnd = purrr::map(data, function(data){
-        
-        mod <- lm(val ~ yr, data)
-        
-        slo <- coefficients(mod)[2]
-        f <- summary(mod)$fstatistic
-        p <- pf(f[1],f[2],f[3],lower.tail=F)
-        attributes(p) <- NULL
-        
-        p <- p_ast(p)
-        
-        out <- tibble(slo = slo, pval = p)
-        
-        return(out)
-        
-      })
-    ) %>% 
-    select(-data) %>% 
-    unnest(trnd)
+  toplo <- trnds %>% 
+    filter(dat %in% 'epc') 
 
-  p <- ggplot(trndest, aes(x = var, y = factor(epchc_station), fill = slo)) + 
+  p <- ggplot(toplo, aes(x = var, y = station, fill = slo)) + 
     geom_tile(colour = 'grey') +
     geom_text(aes(label = pval)) + 
     scale_x_discrete(expand = c(0, 0)) + 
-    scale_y_discrete(expand = c(0, 0)) + 
+    scale_y_discrete('EPCHC station', expand = c(0, 0)) + 
     scale_fill_gradient2('chg/yr', low = 'lightblue', mid = 'white', high = 'lightgreen') + 
-    theme(axis.title = element_blank())
+    theme(
+      axis.title.x = element_blank(),
+      axis.text.x = element_text(angle = 30)
+      )
+  
+  out <- ggplotly(p)
+
+  return(out)
+  
+})
+
+# phyto trend matrix
+algtrndplo <- reactive({
+  
+  # input
+  trnds <- trnds()
+
+  toplo <- trnds %>% 
+    filter(dat %in% 'alg') %>% 
+    mutate(var = factor(var, levels = rev(algnms)))
+
+  p <- ggplot(toplo, aes(x = var, y = station, fill = slo)) + 
+    geom_tile(colour = 'grey') +
+    geom_text(aes(label = pval)) + 
+    scale_x_discrete(expand = c(0, 0)) + 
+    scale_y_discrete('EPCHC station', expand = c(0, 0)) + 
+    scale_fill_gradient2('chg/yr', low = 'lightblue', mid = 'white', high = 'lightgreen') + 
+    theme(
+      axis.title.x = element_blank(), 
+      panel.background = element_rect(color = 'white'), 
+      axis.text.x = element_text(angle = 30)
+      )
   
   out <- ggplotly(p)
 
@@ -394,15 +379,20 @@ column(12,
 ### Water quality
 
 ```{r}
-output$wqtrnd <- renderPlotly(wqtrnd())
-plotlyOutput('wqtrnd', height = 600, width = 600)
+output$wqtrndplo <- renderPlotly(wqtrndplo())
+plotlyOutput('wqtrndplo', height = 600, width = 600)
 ```
 
 ### Phytoplankton
 
+```{r}
+output$algtrndplo <- renderPlotly(algtrndplo())
+plotlyOutput('algtrndplo', height = 600, width = 600)
+```
+
 ### Seagrass abundance
 
 ```{r}
-output$sgtrnd <- renderPlotly(sgtrnd())
-plotlyOutput('sgtrnd', height = 600, width = 600)
+output$sgtrndplo <- renderPlotly(sgtrndplo())
+plotlyOutput('sgtrndplo', height = 600, width = 600)
 ```
