@@ -410,6 +410,152 @@ trndmapsel <- reactive({
   return(out)
   
 })
+
+# multiple comp 1 selection, not aggregated
+mltcmp1 <- reactive({
+  
+  # input
+  wqst2 <- input$wqst2
+  trn2 <- input$trn2
+  yrsl <- input$yrsl
+
+  out <- allann %>% 
+    filter(yr >= yrsl[1] & yr <= yrsl[2]) %>% 
+    filter(station %in% c(wqst2, trn2)) %>% 
+    group_by(var, yr, dat) %>% 
+    nest %>% 
+    mutate(
+      data = purrr::map(data, function(x){
+        
+        ave <- try({mean(x$val, na.rm = TRUE)})
+        los <- try({t.test(x$val)$conf.int[1]})
+        his <- try({t.test(x$val)$conf.int[2]})
+        
+        if(inherits(ave, 'try-error'))
+          ave <- NA
+          
+        if(inherits(los, 'try-error'))
+          los <- NA
+          
+        if(inherits(his, 'try-error'))
+          his <- NA
+        
+        sumout <- data.frame(ave = ave, los = los, his = his)
+        
+        return(sumout)
+        
+      })
+    ) %>% 
+    unnest('data') %>% 
+    ungroup()
+  
+  return(out)
+  
+})
+
+# multiple comp plot 1
+mltcmpplo1 <- reactive({
+  
+  # input
+  mltcmp1 <- mltcmp1()
+  
+  tocmb <- c(unlist(wqalgnms), savnms)
+  trnds <- crossing(cmb1 = tocmb, cmb2 = tocmb) %>% 
+    filter(cmb1 != cmb2) %>% 
+    group_by(cmb1, cmb2) %>% 
+    nest() %>% 
+    mutate(
+      data = purrr::pmap(list(cmb1, cmb2), function(cmb1, cmb2){
+        
+        totrnd <- mltcmp1 %>% 
+          filter(var %in% c(cmb1, cmb2)) %>% 
+          select(yr, var, ave) %>% 
+          spread(var, ave) 
+        
+        trnd <- try({cor.test(totrnd[[cmb1]], totrnd[[cmb2]], method = 'spearman')})
+
+        if(inherits(trnd, 'try-error')){
+          out <- data.frame(corv = NA, pval = NA)
+          return(out)
+        }
+
+        outest <- round(trnd$estimate, 2)
+        outpval <- p_ast(trnd$p.value)
+        out <- data.frame(corv = outest, pval = outpval)
+        
+        return(out)
+        
+      })
+    ) %>% 
+    unnest(data) %>%
+    na.omit() %>%
+    mutate(
+      corv = as.numeric(corv), 
+      cmb1 = factor(cmb1, levels = rev(tocmb), labels = rev(c(names(wqalgnms), savnms))), 
+      cmb2 = factor(cmb2, levels = rev(tocmb), labels = rev(c(names(wqalgnms), savnms)))
+    ) 
+  
+  toplo <- trnds
+  
+  # plot
+  p <- ggplot(toplo, aes(x = cmb1, y = cmb2, fill = corv)) + 
+    geom_tile(colour = 'grey') +
+    geom_text(aes(label = pval)) + 
+    scale_x_discrete(expand = c(0, 0)) + 
+    scale_y_discrete('EPCHC station', expand = c(0, 0)) + 
+    scale_fill_gradient2('Spearman rho', low = 'lightblue', mid = 'white', high = 'lightgreen', midpoint = 0) + 
+    theme(
+      axis.title = element_blank(), 
+      panel.background = element_rect(color = 'white'), 
+      axis.text.x = element_text(angle = 30)
+      )
+  
+  out <- ggplotly(p)
+
+  return(out)
+  
+})
+
+# multiple plot comp 2
+mltcmpplo2 <- reactive({
+  
+  # input
+  wqvar2 <- input$wqvar2
+  algvar2 <- input$algvar2
+  sgvar2 <- input$sgvar2
+  mltcmp1 <- mltcmp1()
+  
+  toplo <- mltcmp1 %>% 
+    filter(var %in% c(wqvar2, algvar2, sgvar2)) %>% 
+    mutate(brs = (his - los) / 2) %>% 
+    select(-los, -his)
+  
+  toplo1 <- toplo %>% filter(dat %in% 'epc')
+  toplo2 <- toplo %>% filter(dat %in% 'alg')
+  toplo3 <- toplo %>% filter(dat %in% 'cov')
+  
+  p1 <- plot_ly(toplo1, x = ~yr, y = ~ave, mode = 'markers', type = 'scatter', error_y = list(array = ~brs)) %>%  
+    layout(
+      yaxis = list(title = wqvar2),
+      xaxis = list(title = NA, gridcolor = '#FFFFFF')
+      )
+  p2 <- plot_ly(toplo2, x = ~yr, y = ~ave, mode = 'markers', type = 'scatter', error_y = list(array = ~brs)) %>%  
+    layout(
+      yaxis = list(title = algvar2),
+      xaxis = list(title = NA, gridcolor = '#FFFFFF')
+    )
+  p3 <- plot_ly(toplo3, x = ~yr, y = ~ave, mode = 'markers', type = 'scatter', error_y = list(array = ~brs)) %>%  
+    layout(
+      yaxis = list(title = sgvar2),
+      xaxis = list(title = NA, gridcolor = '#FFFFFF')
+    )
+  
+  out <- subplot(p1, p2, p3, nrows = 3, shareX = T, titleY = T) %>% 
+    layout(showlegend = F)
+  
+  return(out)
+  
+})
 ```
 
 # Old Tampa Bay Seagrass evaluation {.tabset}
@@ -482,14 +628,46 @@ fillCol(
   column(12,
     column(6, 
       selectInput('sgvar1', 'Select seagrass map 1:', choices = savnms), 
-      selectInput('wqalgvar1', 'Select wq/algae map 1:', choices = wqalgnms)
+      selectInput('wqalgvar1', 'Select water quality/phyto map 1:', choices = wqalgnms)
     ), 
     column(6, 
       selectInput('sgvar2', 'Select seagrass map 2:', choices = savnms, selected = 'Halodule'), 
-      selectInput('wqalgvar2', 'Select wq/algae map 2:', choices = wqalgnms, selected = 'chla')
+      selectInput('wqalgvar2', 'Select water quality/phyto map 2:', choices = wqalgnms, selected = 'chla')
     ),
   ),
   HTML('<center><img src="www/sigsg.png" width="15" height="15"/> Seagrass sig. trend &nbsp;<img src="www/upsg.png" width="15" height="15"/> Seagrass increase &nbsp;<img src="www/dnsg.png" width="15" height="15"/> Seagrass decrease </center> <br> <center><img src="www/sigwq.png" width="15" height="15"/> Water quality/phyto sig. trend &nbsp;<img src="www/upwq.png" width="15" height="15"/> Water quality/phyto increase &nbsp;<img src="www/dnwq.png" width="15" height="15"/> Water quality/phyto decrease</center><br>'),
   uiOutput('trndmapsel')
 )
 ```
+
+### Multiple comparisons {.tabset .tabset-pills}
+
+```{r}
+column(12,   
+  column(6, selectInput('wqst2', 'Select water quality station:', choices = sort(unique(wqstat$epchc_station)), selected = sort(unique(wqstat$epchc_station)), multiple = T)), 
+  column(6, selectInput('trn2', 'Select transect:', choices = levels(covest$Transect), selected = levels(covest$Transect), multiple = T)),
+)
+```
+
+#### All correlations
+
+```{r}
+output$mltcmpplo1 <- renderPlotly(mltcmpplo1())
+plotlyOutput('mltcmpplo1', height = "700px", width = "900px") 
+```
+
+#### Selected variables
+
+```{r}
+output$mltcmpplo2 <- renderPlotly(mltcmpplo2())
+fillCol(
+  flex = c(NA, 1),
+  column(12,
+    column(4, selectInput('wqvar2', 'Select water quality:', choices = wqalgnms[!names(wqalgnms) %in% algnms])),
+    column(4, selectInput('algvar2', 'Select phyto:', choices = algnms)),
+    column(4, selectInput('sgvar2', 'Select seagrass:', choices = savnms))
+    ), 
+  plotlyOutput('mltcmpplo2', height = "700px", width = "900px")
+)
+```
+
