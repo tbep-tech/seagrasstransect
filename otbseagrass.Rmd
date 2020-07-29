@@ -18,6 +18,8 @@ library(mapview)
 library(leaflet)
 library(sf)
 library(extrafont)
+library(EnvStats)
+library(leafsync)
 
 source('R/funcs.R')
 
@@ -54,6 +56,10 @@ algnms <- c('Bacillariophyta', 'Cyanobacteria', 'Karenia brevis', 'Pseudo-nitzsc
 cols <- pal_alg(algnms)
 names(cols) <- algnms
 savnms <- c('AA', 'DA', 'Halodule', 'Thalassia', 'Syringodium', 'Ruppia', 'Halophila spp.')
+
+# names for map comparison selection
+names(algnms) <- algnms
+wqalgnms <- c(list('tn' = 'tn', 'chla' = 'chla', 'secchi' = 'sd_raw_m', 'salinity' = 'Sal_Mid_ppth'), as.list(algnms))
 
 # minor theme tweaks
 pthm <- theme(
@@ -227,31 +233,35 @@ trnds <- reactive({
     nest %>% 
     mutate(
       trnd = purrr::map(data, function(data){
-
-        mod <- try({lm(val ~ yr, data)})
         
-        if(inherits(mod, 'try-error') | nrow(data) < 2){
-          out <- tibble(slo = NA, pval = NA)
+        knout <- try({kendallTrendTest(val ~ yr, data)})
+                  
+        if(inherits(knout, 'try-error') | nrow(data) < 2){
+          out <- data.frame(n = NA, tau = NA, slope= NA, pval = NA)
           return(out)
         }
         
-        slo <- coefficients(mod)[2]
-        f <- summary(mod)$fstatistic
-        p <- pf(f[1],f[2],f[3],lower.tail=F)
-        attributes(p) <- NULL
-        
-        p <- p_ast(p)
-        
-        out <- tibble(slo = slo, pval = p)
-        
+        outest <- round(knout$estimate, 2)
+        outpval <- p_ast(knout$p.value)
+        nval <- nrow(na.omit(data))
+        out <- c(n = nval, outest, pval = outpval) %>%
+          data.frame %>%
+          t %>%
+          data.frame %>%
+          select(-intercept)
         return(out)
         
       })
     ) %>% 
     select(-data) %>% 
     unnest(trnd) %>% 
-    na.omit()
-browser()
+    na.omit() %>% 
+    mutate(
+      n = as.numeric(n),
+      tau = as.numeric(tau), 
+      slope = as.numeric(slope)
+    )
+
   return(out)
   
 })
@@ -266,12 +276,12 @@ sgtrndplo <- reactive({
     filter(dat %in% 'cov') %>% 
     mutate(var = factor(var, levels = rev(savnms)))
 
-  p <- ggplot(toplo, aes(x = var, y = station, fill = slo)) + 
+  p <- ggplot(toplo, aes(x = var, y = station, fill = tau)) + 
     geom_tile(colour = 'grey') +
     geom_text(aes(label = pval)) + 
     scale_x_discrete(expand = c(0, 0)) + 
     scale_y_discrete('Transect', expand = c(0, 0)) + 
-    scale_fill_gradient2('chg/yr', low = 'lightblue', mid = 'white', high = 'lightgreen') + 
+    scale_fill_gradient2('Kendall tau', low = 'lightblue', mid = 'white', high = 'lightgreen') + 
     theme(
       axis.title.x = element_blank(),
       axis.text.x = element_text(angle = 30)
@@ -292,12 +302,12 @@ wqtrndplo <- reactive({
   toplo <- trnds %>% 
     filter(dat %in% 'epc') 
 
-  p <- ggplot(toplo, aes(x = var, y = station, fill = slo)) + 
+  p <- ggplot(toplo, aes(x = var, y = station, fill = tau)) + 
     geom_tile(colour = 'grey') +
     geom_text(aes(label = pval)) + 
     scale_x_discrete(expand = c(0, 0)) + 
     scale_y_discrete('EPCHC station', expand = c(0, 0)) + 
-    scale_fill_gradient2('chg/yr', low = 'lightblue', mid = 'white', high = 'lightgreen') + 
+    scale_fill_gradient2('Kendall tau', low = 'lightblue', mid = 'white', high = 'lightgreen') + 
     theme(
       axis.title.x = element_blank(),
       axis.text.x = element_text(angle = 30)
@@ -319,12 +329,12 @@ algtrndplo <- reactive({
     filter(dat %in% 'alg') %>% 
     mutate(var = factor(var, levels = rev(algnms)))
 
-  p <- ggplot(toplo, aes(x = var, y = station, fill = slo)) + 
+  p <- ggplot(toplo, aes(x = var, y = station, fill = tau)) + 
     geom_tile(colour = 'grey') +
     geom_text(aes(label = pval)) + 
     scale_x_discrete(expand = c(0, 0)) + 
     scale_y_discrete('EPCHC station', expand = c(0, 0)) + 
-    scale_fill_gradient2('chg/yr', low = 'lightblue', mid = 'white', high = 'lightgreen') + 
+    scale_fill_gradient2('Kendall tau', low = 'lightblue', mid = 'white', high = 'lightgreen') + 
     theme(
       axis.title.x = element_blank(), 
       panel.background = element_rect(color = 'white'), 
@@ -333,6 +343,66 @@ algtrndplo <- reactive({
   
   out <- ggplotly(p)
 
+  return(out)
+  
+})
+
+# map trend selection
+trndmapsel <- reactive({
+  
+  # input
+  trnds <- trnds()
+  sgvar1 <- input$sgvar1
+  wqalgvar1 <- input$wqalgvar1
+  sgvar2 <- input$sgvar2
+  wqalgvar2 <- input$wqalgvar2
+
+  
+  trnds <- trnds %>% 
+    mutate(
+      sz = abs(tau), 
+      sz = scales::rescale(sz, to= c(3, 15), from = c(0, 1)), 
+      cols = ifelse(sign(tau) == -1, 'green', 'blue')
+      )
+  sgtrnd1 <- trnds %>% 
+    filter(var %in% sgvar1) %>% 
+    rename(TRAN_ID = station) %>% 
+    left_join(., otbpts, by = 'TRAN_ID')
+  wqalgtrnd1 <- trnds %>% 
+    filter(var %in% wqalgvar1) %>% 
+    rename(epchc_station = station) %>% 
+    mutate(epchc_station = as.numeric(epchc_station)) %>% 
+    left_join(., wqstat, by = 'epchc_station')
+  sgtrnd2 <- trnds %>% 
+    filter(var %in% sgvar2) %>% 
+    rename(TRAN_ID = station) %>% 
+    left_join(., otbpts, by = 'TRAN_ID')
+  wqalgtrnd2 <- trnds %>% 
+    filter(var %in% wqalgvar2) %>% 
+    rename(epchc_station = station) %>% 
+    mutate(epchc_station = as.numeric(epchc_station)) %>% 
+    left_join(., wqstat, by = 'epchc_station')
+  
+  m1 <- m %>% 
+    clearMarkers() %>% 
+    clearControls() %>% 
+    addCircleMarkers(data = sgtrnd1, ~LONG_DD, ~LAT_DD, fillOpacity = 0.5, fillColor = ~cols, radius = ~sz, stroke = F) %>% 
+    addCircleMarkers(data = sgtrnd1, ~LONG_DD, ~LAT_DD, fillOpacity = 0, color = 'black', radius = ~sz, opacity = 1, weight = 2,
+                     label = ~paste0('Transect: ', TRAN_ID, ', Tau: ', tau, ', p ', pval)) %>% 
+    addCircleMarkers(data = wqalgtrnd1, ~Longitude, ~Latitude, fillOpacity = 0.5, fillColor = ~cols, radius = ~sz, stroke = F, 
+                     label = ~paste0('Station: ', epchc_station, ', Tau: ', tau, ', p ', pval))
+  
+  m2 <- m %>% 
+    clearMarkers() %>% 
+    clearControls() %>% 
+    addCircleMarkers(data = sgtrnd2, ~LONG_DD, ~LAT_DD, fillOpacity = 0.5, fillColor = ~cols, radius = ~sz, stroke = F) %>% 
+    addCircleMarkers(data = sgtrnd2, ~LONG_DD, ~LAT_DD, fillOpacity = 0, color = 'black', radius = ~sz, opacity = 1, weight = 2,
+                     label = ~paste0('Transect: ', TRAN_ID, ', Tau: ', tau, ', p ', pval)) %>% 
+    addCircleMarkers(data = wqalgtrnd2, ~Longitude, ~Latitude, fillOpacity = 0.5, fillColor = ~cols, radius = ~sz, stroke = F,
+                     label = ~paste0('Station: ', epchc_station, ', Tau: ', tau, ', p ', pval))
+  
+  out <- leafsync::sync(m1, m2, ncol = 2)
+  
   return(out)
   
 })
@@ -366,6 +436,8 @@ plotlyOutput('obsplo', height = "1000px")
 
 ## Trends and correlations {.tabset .tabset-pills}
 
+All analyses based on annual averages. 
+
 ```{r}
 column(12, 
   column(6, sliderInput('yrsl', 'Select date range:', min = 1998, max = 2019, value = c(1998, 2019), sep = '', width = 600))
@@ -396,3 +468,24 @@ plotlyOutput('algtrndplo', height = 600, width = 600)
 output$sgtrndplo <- renderPlotly(sgtrndplo())
 plotlyOutput('sgtrndplo', height = 600, width = 600)
 ```
+
+### Maps
+
+```{r}
+output$trndmapsel <- renderUI(trndmapsel())
+fillCol(
+  flex = c(NA, 1),
+  column(12,
+    column(6, 
+      selectInput('sgvar1', 'Select seagrass map 1:', choices = savnms), 
+      selectInput('wqalgvar1', 'Select wq/algae map 1:', choices = wqalgnms)
+    ), 
+    column(6, 
+      selectInput('sgvar2', 'Select seagrass map 2:', choices = savnms), 
+      selectInput('wqalgvar2', 'Select wq/algae map 2:', choices = wqalgnms)
+    ),
+  ),
+  uiOutput('trndmapsel')
+)
+```
+
