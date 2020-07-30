@@ -29,6 +29,10 @@ data(covest)
 data(algdat)
 data(allann)
 
+prj <- 4326
+st_crs(trnpts) <- prj
+st_crs(tbsegshed) <- prj
+
 loadfonts(device = 'pdf', quiet = T)
 if(Sys.info()[1] == 'Windows')
   loadfonts(device = 'win', quiet = T)
