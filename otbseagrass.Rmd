@@ -59,7 +59,7 @@ savnms <- c('AA', 'DA', 'Halodule', 'Thalassia', 'Syringodium', 'Ruppia', 'Halop
 
 # names for map comparison selection
 names(algnms) <- algnms
-wqalgnms <- c(list('tn' = 'tn', 'chla' = 'chla', 'secchi' = 'sd_raw_m', 'salinity' = 'Sal_Mid_ppth'), as.list(algnms))
+wqalgnms <- c(list('Total nitrogen' = 'tn', 'Chorophyll-a' = 'chla', 'Secchi' = 'sd_raw_m', 'Salinity' = 'Sal_Mid_ppth'), as.list(algnms))
 
 # minor theme tweaks
 pthm <- theme(
@@ -428,19 +428,15 @@ mltcmp1 <- reactive({
       data = purrr::map(data, function(x){
         
         ave <- try({mean(x$val, na.rm = TRUE)})
-        los <- try({t.test(x$val)$conf.int[1]})
-        his <- try({t.test(x$val)$conf.int[2]})
+        brs <- try({t.test(x$val)$conf.int %>% diff() / 2})
         
         if(inherits(ave, 'try-error'))
           ave <- NA
           
-        if(inherits(los, 'try-error'))
-          los <- NA
-          
-        if(inherits(his, 'try-error'))
-          his <- NA
+        if(inherits(brs, 'try-error'))
+          brs <- NA
         
-        sumout <- data.frame(ave = ave, los = los, his = his)
+        sumout <- data.frame(ave = ave, brs = brs)
         
         return(sumout)
         
@@ -520,42 +516,132 @@ mltcmpplo1 <- reactive({
 mltcmpplo2 <- reactive({
   
   # input
-  wqvar2 <- input$wqvar2
-  algvar2 <- input$algvar2
-  sgvar2 <- input$sgvar2
+  wqvar3 <- input$wqvar3
+  algvar3 <- input$algvar3
+  sgvar3 <- input$sgvar3
   mltcmp1 <- mltcmp1()
-  
+
   toplo <- mltcmp1 %>% 
-    filter(var %in% c(wqvar2, algvar2, sgvar2)) %>% 
-    mutate(brs = (his - los) / 2) %>% 
-    select(-los, -his)
+    filter(var %in% c(wqvar3, algvar3, sgvar3)) %>% 
+    gather('sum', 'val', ave, brs) %>% 
+    unite('varsum', dat, sum, sep = '_') %>% 
+    select(-var) %>%
+    spread(varsum, val)
   
-  toplo1 <- toplo %>% filter(dat %in% 'epc')
-  toplo2 <- toplo %>% filter(dat %in% 'alg')
-  toplo3 <- toplo %>% filter(dat %in% 'cov')
+  # axis limits
+  mxv <- toplo %>% 
+    mutate(
+      algmx = alg_ave + alg_brs,
+      covmx = cov_ave + cov_brs,
+      epcmx = epc_ave + epc_brs
+    ) %>% 
+    gather('var', 'val', algmx, covmx, epcmx) %>% 
+    group_by(var) %>% 
+    summarise(val = max(val)) %>%  
+    spread(var, val)
   
-  p1 <- plot_ly(toplo1, x = ~yr, y = ~ave, mode = 'markers', type = 'scatter', error_y = list(array = ~brs)) %>%  
+  # plots
+  mrk <- list(size = 8, opacity = 1, color = 'black', showlegend = F)
+
+  p1 <- plot_ly(toplo, x = ~yr, y = ~epc_ave, mode = 'markers', type = 'scatter', error_y = list(array = ~epc_brs, width = 0), color = I('lightblue')) %>%  
+    add_trace(mode = 'markers', marker = mrk, showlegend = F) %>% 
     layout(
-      yaxis = list(title = wqvar2),
-      xaxis = list(title = NA, gridcolor = '#FFFFFF')
+      yaxis = list(title = wqvar3),# range = c(0, mxv[['epcmx']])),
+      xaxis = list(title = 'Year', gridcolor = '#FFFFFF')
       )
-  p2 <- plot_ly(toplo2, x = ~yr, y = ~ave, mode = 'markers', type = 'scatter', error_y = list(array = ~brs)) %>%  
+  p2 <- plot_ly(toplo, x = ~yr, y = ~alg_ave, mode = 'markers', type = 'scatter', error_y = list(array = ~alg_brs, width = 0), color = I('orange')) %>%  
+    add_trace(mode = 'markers', marker = mrk, showlegend = F) %>% 
     layout(
-      yaxis = list(title = algvar2),
-      xaxis = list(title = NA, gridcolor = '#FFFFFF')
+      yaxis = list(title = algvar3),# range = c(0, mxv[['algmx']])),
+      xaxis = list(title = 'Year', gridcolor = '#FFFFFF')
     )
-  p3 <- plot_ly(toplo3, x = ~yr, y = ~ave, mode = 'markers', type = 'scatter', error_y = list(array = ~brs)) %>%  
+  p3 <- plot_ly(toplo, x = ~yr, y = ~cov_ave, mode = 'markers', type = 'scatter', error_y = list(array = ~cov_brs, width = 0), color = I('lightgreen')) %>%
+    add_trace(mode = 'markers', marker = mrk, showlegend = F) %>% 
     layout(
-      yaxis = list(title = sgvar2),
-      xaxis = list(title = NA, gridcolor = '#FFFFFF')
+      yaxis = list(title = sgvar3), #range = c(0, mxv[['covmx']])),
+      xaxis = list(title = 'Year', gridcolor = '#FFFFFF')
     )
   
-  out <- subplot(p1, p2, p3, nrows = 3, shareX = T, titleY = T) %>% 
-    layout(showlegend = F)
+  out <- subplot(p1, p2, p3, nrows = 1, shareX = T, titleY = T, margin = 0.04) %>% 
+    layout(
+      showlegend = F, 
+      xaxis = list(title = 'Year')
+      )
   
   return(out)
   
 })
+
+# multiple plot comp 3
+mltcmpplo3 <- reactive({
+  
+  # input
+  wqvar3 <- input$wqvar3
+  algvar3 <- input$algvar3
+  sgvar3 <- input$sgvar3
+  mltcmp1 <- mltcmp1()
+  
+  toplo <- mltcmp1 %>% 
+    filter(var %in% c(wqvar3, algvar3, sgvar3)) %>% 
+    mutate(
+      var = factor(var, levels = c(wqvar3, algvar3, sgvar3), labels = c('wq', 'alg', 'sg')), 
+      var = as.character(var)
+    ) %>% 
+    gather('sum', 'val', ave, brs) %>% 
+    unite('varsum', var, sum, sep = '_') %>% 
+    select(-dat) %>% 
+    spread(varsum, val)
+  
+  # max values
+  mxv <- toplo %>% 
+    mutate(
+      algmx = alg_ave + alg_brs,
+      sgmx = sg_ave + sg_brs,
+      wqmx = wq_ave + wq_brs
+    ) %>% 
+    gather('var', 'val', algmx, sgmx, wqmx) %>% 
+    group_by(var) %>% 
+    summarise(val = max(val)) %>%  
+    spread(var, val)
+  
+  # plots
+  mrk <- list(size = 8, opacity = 1, color = 'black', showlegend = F)
+
+  p1 <- plot_ly(toplo, type = 'scatter', mode = 'markers') %>%
+    add_trace(x = ~wq_ave, y = ~alg_ave, error_x = list(array = ~wq_brs, width = 0), name = 'Water quality', color = I('lightblue')) %>% 
+    add_trace(x = ~wq_ave, y = ~alg_ave, error_y = list(array = ~alg_brs, width = 0), name = 'Phytoplankton', color = I('orange')) %>%  
+    add_trace(x = ~wq_ave, y = ~alg_ave, marker = mrk, showlegend = F) %>% 
+    layout(
+      xaxis = list(title = wqvar3, gridcolor = '#FFFFFF'),# range = c(0, mxv[['wqmx']])),
+      yaxis = list(title = algvar3)#, range = c(0, mxv[['algmx']]))
+      )
+  p2 <- plot_ly(toplo, type = 'scatter', mode = 'markers') %>%
+    add_trace(x = ~alg_ave, y = ~sg_ave, error_x = list(array = ~alg_brs, width = 0), name = 'Pytoplankton', color = I('orange'), showlegend = F) %>% 
+    add_trace(x = ~alg_ave, y = ~sg_ave, error_y = list(array = ~sg_brs, width = 0), name = 'Seagrass coverage', color = I('lightgreen')) %>%  
+    add_trace(x = ~alg_ave, y = ~sg_ave, marker = mrk, showlegend = F) %>% 
+    layout(
+      xaxis = list(title = algvar3, gridcolor = '#FFFFFF'),# range = c(0, mxv[['algmx']])),
+      yaxis = list(title = sgvar3)#, range = c(0, mxv[['sgmx']]))
+      )
+  p3 <- plot_ly(toplo, type = 'scatter', mode = 'markers') %>%
+    add_trace(x = ~sg_ave, y = ~wq_ave, error_x = list(array = ~sg_brs, width = 0), name = 'Seagrass coverage', color = I('lightgreen'), showlegend = F) %>% 
+    add_trace(x = ~sg_ave, y = ~wq_ave, error_y = list(array = ~wq_brs, width = 0), name = 'Water quality', color = I('lightblue'), showlegend = F) %>%  
+    add_trace(x = ~sg_ave, y = ~wq_ave, marker = mrk, showlegend = F) %>% 
+    layout(
+      xaxis = list(title = sgvar3, gridcolor = '#FFFFFF'),#, range = c(0, mxv[['sgmx']])),
+      yaxis = list(title = wqvar3)#, range = c(0, mxv[['wqmx']]))
+      )
+  out <- subplot(p1, p2, p3, nrows = 1, titleX = T, titleY = T, margin = 0.04) %>%  
+    layout(
+      legend = list(orientation = "h",   # show entries horizontally
+                     xanchor = "center",  # use center of legend as anchor
+                     x = 0.5, y = -0.3)
+    )
+
+  return(out)
+  
+})
+
 ```
 
 # Old Tampa Bay Seagrass evaluation {.tabset}
@@ -660,14 +746,16 @@ plotlyOutput('mltcmpplo1', height = "700px", width = "900px")
 
 ```{r}
 output$mltcmpplo2 <- renderPlotly(mltcmpplo2())
+output$mltcmpplo3 <- renderPlotly(mltcmpplo3())
 fillCol(
-  flex = c(NA, 1),
+  flex = c(NA, NA, NA),
   column(12,
-    column(4, selectInput('wqvar2', 'Select water quality:', choices = wqalgnms[!names(wqalgnms) %in% algnms])),
-    column(4, selectInput('algvar2', 'Select phyto:', choices = algnms)),
-    column(4, selectInput('sgvar2', 'Select seagrass:', choices = savnms))
+    column(4, selectInput('wqvar3', 'Select water quality:', choices = wqalgnms[!names(wqalgnms) %in% algnms])),
+    column(4, selectInput('algvar3', 'Select phyto:', choices = algnms)),
+    column(4, selectInput('sgvar3', 'Select seagrass:', choices = savnms))
     ), 
-  plotlyOutput('mltcmpplo2', height = "700px", width = "900px")
+  plotlyOutput('mltcmpplo2', width = "900px", height = '300px'),
+  plotlyOutput('mltcmpplo3', width = "900px", height = '350px')
 )
 ```
 
