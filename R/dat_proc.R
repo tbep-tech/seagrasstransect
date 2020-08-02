@@ -95,16 +95,29 @@ save(algdat, file = here::here('data', 'algdat.RData'), compress = 'xz')
 data(algdat)
 data(covest)
 
+# epc annual averages
+epcann <- epcdata %>% 
+  filter(bay_segment %in% 'OTB') %>% 
+  select(epchc_station, yr, tn,sd_raw_m, chla, Sal_Mid_ppth, Temp_Water_Mid_degC) %>% 
+  group_by(epchc_station, yr) %>% 
+  summarise_if(is.numeric, mean, na.rm = T) %>% 
+  gather('var', 'val', -epchc_station, -yr) %>% 
+  rename(station = epchc_station) %>% 
+  mutate(
+    dat = 'epc',
+    station = as.character(station)
+  )
+
 # algdata annual averages, average across months
 algann <- algdat %>% 
-  filter(epchc_station %in% unique(epcann$epchc_station)) %>% 
+  filter(epchc_station %in% unique(epcann$station)) %>% 
   group_by(yr, name, epchc_station) %>%
   summarise(val = mean(count, na.rm = T)) %>% 
   ungroup %>% 
   mutate(
     name = factor(name, levels = algnms, labels = algnms)
   ) %>% 
-  rename(station = epchc_station, val = count, var = name) %>% 
+  rename(station = epchc_station, var = name) %>% 
   mutate(
     dat = 'alg',
     station = as.character(station)
@@ -120,19 +133,6 @@ covann <- covest %>%
   ungroup %>% 
   mutate(
     dat = 'cov',
-    station = as.character(station)
-  )
-
-# epc annual averages
-epcann <- epcdata %>% 
-  filter(bay_segment %in% 'OTB') %>% 
-  select(epchc_station, yr, tn,sd_raw_m, chla, Sal_Mid_ppth) %>% 
-  group_by(epchc_station, yr) %>% 
-  summarise_if(is.numeric, mean, na.rm = T) %>% 
-  gather('var', 'val', -epchc_station, -yr) %>% 
-  rename(station = epchc_station) %>% 
-  mutate(
-    dat = 'epc',
     station = as.character(station)
   )
 
