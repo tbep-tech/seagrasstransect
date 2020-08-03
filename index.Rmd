@@ -25,10 +25,13 @@ monagncy <- trnlns %>%
   sf::st_set_geometry(NULL)
 
 trnpts <- trnpts %>% 
-  left_join(monagncy, by = 'TRAN_ID') %>% 
+  inner_join(monagncy, by = 'TRAN_ID') %>% 
   unite('lonlat', LONG_DD, LAT_DD, sep = ',') %>% 
-  unite('lab', TRANSECT, lonlat, sep = ': ') %>% 
+  unite('lab', TRAN_ID, lonlat, sep = ': ', remove = F) %>% 
   mutate(lab = paste0('Transect: ', lab))
+
+trnlns <- trnlns %>% 
+  filter(as.character(Site) %in% trnpts$TRAN_ID)
 
 # get data and format
 trnjsn <- read_trnjsn(training = TRUE)
