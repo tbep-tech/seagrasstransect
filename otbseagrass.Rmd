@@ -529,6 +529,7 @@ mltcmpplo2 <- reactive({
   wqvar3 <- input$wqvar3
   algvar3 <- input$algvar3
   sgvar3 <- input$sgvar3
+  yrsl <- input$yrsl
   mltcmp1 <- mltcmp1()
 
   toplo <- mltcmp1 %>% 
@@ -537,41 +538,31 @@ mltcmpplo2 <- reactive({
     unite('varsum', dat, sum, sep = '_') %>% 
     select(-var) %>%
     spread(varsum, val)
-  
-  # axis limits
-  mxv <- toplo %>% 
-    mutate(
-      algmx = alg_ave + alg_brs,
-      covmx = cov_ave + cov_brs,
-      epcmx = epc_ave + epc_brs
-    ) %>% 
-    gather('var', 'val', algmx, covmx, epcmx) %>% 
-    group_by(var) %>% 
-    summarise(val = max(val)) %>%  
-    spread(var, val)
-  
+
   # plots
+  yrsl[1] <- yrsl[1] - 1
+  yrsl[2] <- yrsl[2] + 1
   mrk <- list(size = 8, opacity = 1, color = 'black', showlegend = F)
 
-  p1 <- plot_ly(toplo, x = ~yr, y = ~epc_ave, mode = 'markers', type = 'scatter', error_y = list(array = ~epc_brs, width = 0), color = I('lightblue')) %>%  
+  p1 <- plot_ly(toplo[!is.na(toplo$epc_ave), ], x = ~yr, y = ~epc_ave, mode = 'markers', type = 'scatter', error_y = list(array = ~epc_brs, width = 0), color = I('lightblue')) %>%  
     add_trace(mode = 'markers', marker = mrk, showlegend = F) %>% 
     layout(
-      yaxis = list(title = wqvar3),# range = c(0, mxv[['epcmx']])),
-      xaxis = list(title = 'Year', gridcolor = '#FFFFFF')
+      yaxis = list(title = wqvar3),
+      xaxis = list(title = 'Year', gridcolor = '#FFFFFF', range = yrsl)
       )
-  p2 <- plot_ly(toplo, x = ~yr, y = ~alg_ave, mode = 'markers', type = 'scatter', error_y = list(array = ~alg_brs, width = 0), color = I('orange')) %>%  
+  p2 <- plot_ly(toplo[!is.na(toplo$alg_ave), ], x = ~yr, y = ~alg_ave, mode = 'markers', type = 'scatter', error_y = list(array = ~alg_brs, width = 0), color = I('orange')) %>%  
     add_trace(mode = 'markers', marker = mrk, showlegend = F) %>% 
     layout(
-      yaxis = list(title = algvar3),# range = c(0, mxv[['algmx']])),
-      xaxis = list(title = 'Year', gridcolor = '#FFFFFF')
+      yaxis = list(title = algvar3),
+      xaxis = list(title = 'Year', gridcolor = '#FFFFFF', range = yrsl)
     )
-  p3 <- plot_ly(toplo, x = ~yr, y = ~cov_ave, mode = 'markers', type = 'scatter', error_y = list(array = ~cov_brs, width = 0), color = I('lightgreen')) %>%
+  p3 <- plot_ly(toplo[!is.na(toplo$cov_ave), ], x = ~yr, y = ~cov_ave, mode = 'markers', type = 'scatter', error_y = list(array = ~cov_brs, width = 0), color = I('lightgreen')) %>%
     add_trace(mode = 'markers', marker = mrk, showlegend = F) %>% 
     layout(
-      yaxis = list(title = sgvar3), #range = c(0, mxv[['covmx']])),
-      xaxis = list(title = 'Year', gridcolor = '#FFFFFF')
+      yaxis = list(title = sgvar3),
+      xaxis = list(title = 'Year', gridcolor = '#FFFFFF', range = yrsl)
     )
-  
+
   out <- subplot(p1, p2, p3, nrows = 1, shareX = T, titleY = T, margin = 0.04) %>% 
     layout(
       showlegend = F, 
@@ -617,7 +608,7 @@ mltcmpplo3 <- reactive({
   # plots
   mrk <- list(size = 8, opacity = 1, color = 'black', showlegend = F)
 
-  p1 <- plot_ly(toplo, type = 'scatter', mode = 'markers') %>%
+  p1 <- plot_ly(toplo[!is.na(toplo$wq_ave)&!is.na(toplo$alg_ave), ], type = 'scatter', mode = 'markers') %>%
     add_trace(x = ~wq_ave, y = ~alg_ave, error_x = list(array = ~wq_brs, width = 0), name = 'Water quality', color = I('lightblue')) %>% 
     add_trace(x = ~wq_ave, y = ~alg_ave, error_y = list(array = ~alg_brs, width = 0), name = 'Phytoplankton', color = I('orange')) %>%  
     add_trace(x = ~wq_ave, y = ~alg_ave, marker = mrk, showlegend = F) %>% 
@@ -625,7 +616,7 @@ mltcmpplo3 <- reactive({
       xaxis = list(title = wqvar3, gridcolor = '#FFFFFF'),# range = c(0, mxv[['wqmx']])),
       yaxis = list(title = algvar3)#, range = c(0, mxv[['algmx']]))
       )
-  p2 <- plot_ly(toplo, type = 'scatter', mode = 'markers') %>%
+  p2 <- plot_ly(toplo[!is.na(toplo$sg_ave)&!is.na(toplo$alg_ave), ], type = 'scatter', mode = 'markers') %>%
     add_trace(x = ~alg_ave, y = ~sg_ave, error_x = list(array = ~alg_brs, width = 0), name = 'Pytoplankton', color = I('orange'), showlegend = F) %>% 
     add_trace(x = ~alg_ave, y = ~sg_ave, error_y = list(array = ~sg_brs, width = 0), name = 'Seagrass coverage', color = I('lightgreen')) %>%  
     add_trace(x = ~alg_ave, y = ~sg_ave, marker = mrk, showlegend = F) %>% 
@@ -633,7 +624,7 @@ mltcmpplo3 <- reactive({
       xaxis = list(title = algvar3, gridcolor = '#FFFFFF'),# range = c(0, mxv[['algmx']])),
       yaxis = list(title = sgvar3)#, range = c(0, mxv[['sgmx']]))
       )
-  p3 <- plot_ly(toplo, type = 'scatter', mode = 'markers') %>%
+  p3 <- plot_ly(toplo[!is.na(toplo$wq_ave)&!is.na(toplo$sg_ave), ], type = 'scatter', mode = 'markers') %>%
     add_trace(x = ~sg_ave, y = ~wq_ave, error_x = list(array = ~sg_brs, width = 0), name = 'Seagrass coverage', color = I('lightgreen'), showlegend = F) %>% 
     add_trace(x = ~sg_ave, y = ~wq_ave, error_y = list(array = ~wq_brs, width = 0), name = 'Water quality', color = I('lightblue'), showlegend = F) %>%  
     add_trace(x = ~sg_ave, y = ~wq_ave, marker = mrk, showlegend = F) %>% 
