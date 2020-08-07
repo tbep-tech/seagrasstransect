@@ -1,6 +1,7 @@
 library(tbeptools)
 library(tidyverse)
 library(patchwork)
+library(lubridate)
 
 data(algdat)
 data(allann)
@@ -205,7 +206,7 @@ toplo1 <- algdat %>%
   filter(name %in% c('Bacillariophyta', 'Pseudo-nitzschia sp.', 'Pyrodinium bahamense')) %>% 
   group_by(mo, name) %>% 
   summarise(
-    count = mean(count, na.rm = T)
+    count = sum(count, na.rm = T)
   ) %>% 
   ungroup %>% 
   complete(mo, name, fill = list(count = 0)) %>% 
@@ -217,7 +218,7 @@ cols <- c('mediumseagreen', 'darkolivegreen1', 'gold2')
 names(cols) <- c('Bacillariophyta', 'Pseudo-nitzschia sp.', 'Pyrodinium bahamense')
 
 p1 <- ggplot(toplo1, aes(x = as.numeric(mo), y = count, fill = name)) + 
-  geom_area(position = 'stack', alpha = 0.7) + 
+  geom_area(position = 'count', alpha = 0.7) + 
   scale_x_continuous(expand = c(0, 0), breaks = seq(1, 12), labels = levels(algdat$mo)) + 
   scale_y_continuous(expand = c(0, 0), limits = c(0, 140)) + 
   scale_fill_manual(values = cols, drop = F) +
@@ -231,7 +232,7 @@ p1 <- ggplot(toplo1, aes(x = as.numeric(mo), y = count, fill = name)) +
     legend.position = 'none'
   ) + 
   labs(
-    y = "Average cell count (0.1/mL)", 
+    y = "Propportion cell count", 
     title = c('1998 - 2008')
   )
 
@@ -241,7 +242,7 @@ toplo2 <- algdat %>%
   filter(name %in% c('Bacillariophyta', 'Pseudo-nitzschia sp.', 'Pyrodinium bahamense')) %>% 
   group_by(mo, name) %>% 
   summarise(
-    count = mean(count, na.rm = T)
+    count = sum(count, na.rm = T)
   ) %>% 
   ungroup %>% 
   complete(mo, name, fill = list(count = 0))  %>% 
@@ -250,7 +251,7 @@ toplo2 <- algdat %>%
   )
 
 p2 <- ggplot(toplo2, aes(x = as.numeric(mo), y = count, fill = name)) + 
-  geom_area(position = 'stack', alpha = 0.7) + 
+  geom_area(position = 'count', alpha = 0.7) + 
   scale_x_continuous(expand = c(0, 0), breaks = seq(1, 12), labels = levels(algdat$mo)) + 
   scale_y_continuous(expand = c(0, 0), limits = c(0, 140)) + 
   scale_fill_manual(values = cols) +
@@ -264,7 +265,7 @@ p2 <- ggplot(toplo2, aes(x = as.numeric(mo), y = count, fill = name)) +
     # legend.position = 'top'
   ) + 
   labs(
-    y = "Average cell count (0.1/mL)", 
+    y = "Proportion cell count (0.1/mL)", 
     title = c('2009 - 2019')
   )
 
@@ -274,4 +275,98 @@ png('~/Desktop/phytoseas.png', height = 4.5, width = 10, units = 'in',res = 200)
 print(out)  
 dev.off()
 
-  
+# salinity by segment -----------------------------------------------------
+
+epcann <- epcdata %>% 
+  filter(yr >= 2009) %>% 
+  filter(yr <= 2019) %>% 
+  select(bay_segment, epchc_station, SampleTime, Sal_Bottom_ppth, Sal_Mid_ppth, Sal_Top_ppth, Temp_Water_Bottom_degC, Temp_Water_Mid_degC, Temp_Water_Top_degC) %>% 
+  gather('var', 'val', -bay_segment, -epchc_station, -SampleTime) %>% 
+  mutate(
+    SampleTime = as.Date(SampleTime), 
+    var = gsub('\\_ppth$|\\_degC$', '', var), 
+    var = gsub('^Temp\\_Water', 'TempWater', var)
+  ) %>% 
+  separate(var, c('var', 'dep'), sep = '_') %>% 
+  group_by(bay_segment, epchc_station, SampleTime, var) %>% 
+  summarise(val = mean(val, na.rm = T)) %>% 
+  mutate(
+    yr = year(SampleTime)
+  ) %>% 
+  group_by(bay_segment, epchc_station, yr, var) %>% 
+  summarise(val = mean(val, na.rm = T)) %>% 
+  group_by(bay_segment, yr, var) %>% 
+  nest %>% 
+  mutate(
+    res = purrr::map(data, function(x){
+      
+      avev <- try({mean(x$val, na.rm = T)})
+      barv <- try({diff(t.test(x$val, na.rm = T)$conf.int) / 2})
+      
+      if(inherits(avev, 'try-error'))
+        avev <- NA
+      if(inherits(barv, 'try-error'))
+        barv <- NA
+      
+      out <- data.frame(avev = avev, barv = barv)
+      
+      return(out)
+      
+    })
+  ) %>% 
+  select(-data) %>% 
+  unnest(res) %>% 
+  gather('stat', 'val', avev, barv) %>% 
+  unite(var, stat, 'var') %>% 
+  spread(var, val) %>% 
+  mutate(bay_segment = factor(bay_segment, levels = c('OTB', 'HB', 'MTB', 'LTB')))
+
+toplo <- epcann
+
+p <- ggplot(toplo, aes(x = yr, y = avev_Sal)) + 
+  geom_errorbar(aes(ymin = avev_Sal - barv_Sal, ymax = avev_Sal + barv_Sal), colour = 'lightblue', width = 0) + 
+  geom_point(size = 2) +
+  facet_wrap(~bay_segment, ncol = 4) + 
+  theme_minimal(base_size = 12) +
+  scale_x_continuous(breaks = c(2010, 2015)) + 
+  # stat_smooth(method = 'lm') + 
+  theme(
+    strip.background = element_blank(),
+    strip.placement = 'outside', 
+    panel.grid.major.x = element_blank(), 
+    panel.grid.minor.x = element_blank(), 
+    panel.grid.minor.y = element_blank(), 
+    legend.position = 'none', 
+    axis.title.x = element_blank()
+  )  + 
+  labs(
+    y = 'Salinity (psu)'
+  )
+
+png('~/Desktop/allsal.png', height = 3, width = 9, units = 'in',res = 200)
+print(p)  
+dev.off()
+
+p <- ggplot(toplo, aes(x = yr, y = avev_TempWater)) + 
+  geom_errorbar(aes(ymin = avev_TempWater - barv_TempWater, ymax = avev_TempWater + barv_TempWater), colour = 'lightblue', width = 0) + 
+  geom_point(size = 2) +
+  facet_wrap(~bay_segment, ncol = 4) + 
+  theme_minimal(base_size = 12) +
+  scale_x_continuous(breaks = c(2010, 2015)) + 
+  # stat_smooth(method = 'lm') + 
+  theme(
+    strip.background = element_blank(),
+    strip.placement = 'outside', 
+    panel.grid.major.x = element_blank(), 
+    panel.grid.minor.x = element_blank(), 
+    panel.grid.minor.y = element_blank(), 
+    legend.position = 'none', 
+    axis.title.x = element_blank()
+  )  + 
+  labs(
+    y = 'Temp (C)'
+  )
+
+png('~/Desktop/alltmp.png', height = 3, width = 9, units = 'in',res = 200)
+print(p)  
+dev.off()
