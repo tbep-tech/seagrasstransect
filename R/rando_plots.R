@@ -3,6 +3,8 @@ library(tidyverse)
 library(patchwork)
 library(lubridate)
 
+source('R/funcs.R')
+
 data(algdat)
 data(allann)
 
@@ -201,7 +203,7 @@ dev.off()
 # phyto seasonal ----------------------------------------------------------
 
 toplo1 <- algdat %>% 
-  filter(yr >= 1998 & yr <= 2008) %>%
+  filter(yr >= 1998 & yr <= 2006) %>%
   filter(epchc_station %in% allann$station) %>% 
   filter(name %in% c('Bacillariophyta', 'Pseudo-nitzschia sp.', 'Pyrodinium bahamense')) %>% 
   group_by(mo, name) %>% 
@@ -218,9 +220,9 @@ cols <- c('mediumseagreen', 'darkolivegreen1', 'gold2')
 names(cols) <- c('Bacillariophyta', 'Pseudo-nitzschia sp.', 'Pyrodinium bahamense')
 
 p1 <- ggplot(toplo1, aes(x = as.numeric(mo), y = count, fill = name)) + 
-  geom_area(position = 'count', alpha = 0.7) + 
+  geom_area(position = 'fill', alpha = 0.7) + 
   scale_x_continuous(expand = c(0, 0), breaks = seq(1, 12), labels = levels(algdat$mo)) + 
-  scale_y_continuous(expand = c(0, 0), limits = c(0, 140)) + 
+  scale_y_continuous(expand = c(0, 0)) + #, limits = c(0, 140)) + 
   scale_fill_manual(values = cols, drop = F) +
   theme_minimal() +
   theme(
@@ -233,11 +235,11 @@ p1 <- ggplot(toplo1, aes(x = as.numeric(mo), y = count, fill = name)) +
   ) + 
   labs(
     y = "Propportion cell count", 
-    title = c('1998 - 2008')
+    title = c('1998 - 2006')
   )
 
 toplo2 <- algdat %>% 
-  filter(yr > 2008) %>% 
+  filter(yr > 2006) %>% 
   filter(epchc_station %in% allann$station) %>% 
   filter(name %in% c('Bacillariophyta', 'Pseudo-nitzschia sp.', 'Pyrodinium bahamense')) %>% 
   group_by(mo, name) %>% 
@@ -251,9 +253,9 @@ toplo2 <- algdat %>%
   )
 
 p2 <- ggplot(toplo2, aes(x = as.numeric(mo), y = count, fill = name)) + 
-  geom_area(position = 'count', alpha = 0.7) + 
+  geom_area(position = 'fill', alpha = 0.7) + 
   scale_x_continuous(expand = c(0, 0), breaks = seq(1, 12), labels = levels(algdat$mo)) + 
-  scale_y_continuous(expand = c(0, 0), limits = c(0, 140)) + 
+  scale_y_continuous(expand = c(0, 0)) + #, limits = c(0, 140)) + 
   scale_fill_manual(values = cols) +
   theme_minimal() +
   theme(

@@ -20,12 +20,7 @@ library(mapview)
 data(trnlns)
 data(trnpts)
 
-monagncy <- trnlns %>% 
-  select(TRAN_ID = Site , MonAgency) %>% 
-  sf::st_set_geometry(NULL)
-
 trnpts <- trnpts %>% 
-  inner_join(monagncy, by = 'TRAN_ID') %>% 
   unite('lonlat', LONG_DD, LAT_DD, sep = ',') %>% 
   unite('lab', TRAN_ID, lonlat, sep = ': ', remove = F) %>% 
   mutate(lab = paste0('Transect: ', lab))
@@ -100,7 +95,7 @@ plodat <- reactive({
   sppsel <- input$sppsel
   sitsel <- input$sitsel
   varsel <- input$varsel
-  
+
   out <- show_compplot(dat, sitsel, sppsel, varsel, base_size = 18, xtxt = 13)
   
   validate(
