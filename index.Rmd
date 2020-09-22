@@ -29,8 +29,7 @@ trnlns <- trnlns %>%
   filter(as.character(Site) %in% trnpts$TRAN_ID)
 
 # get data and format
-trnjsn <- read_trnjsn(training = TRUE)
-dat <- anlz_trnjsn(trnjsn, training = TRUE)
+dat <- read_transect(training = TRUE)
 
 # get choices for selection
 sppopt <- unique(dat$Savspecies)
