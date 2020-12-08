@@ -6,6 +6,7 @@ library(mapview)
 library(tbeptools)
 library(sf)
 library(tidyverse)
+library(lubridate)
 
 utm <- '+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs'
 
@@ -58,7 +59,8 @@ tmp <- trn %>%
   st_transform(crs = 4326) %>% 
   mutate(
     Depth_dem = raster::extract(dem, .), 
-    Depth_dem = 100 * Depth_dem
+    Depth_dem = 100 * Depth_dem, 
+    Date = floor_date(Date, unit = 'month')
   )
 
 # look at a map to see if the locations are correct
