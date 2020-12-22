@@ -1,6 +1,7 @@
 ---
 output: 
-  html_document
+  html_document:
+    anchor_sections: TRUE
 css: styles.css
 runtime: shiny
 ---
