@@ -1,4 +1,4 @@
-__Complete transect data__: Minimally altered raw transect data for every transect and site (quadrat) along each transect.  
+__Complete transect data (trantab.csv)__: Minimally altered raw transect data for every transect and site (quadrat) along each transect.  
 
 * *Date*: Sample date in YYYY-MM-DD
 * *Transect*: Transect name
@@ -10,7 +10,7 @@ __Complete transect data__: Minimally altered raw transect data for every transe
 * *aveval*: Average value for the measured variable (multiple quadrats at a site depending on variable), unitless if abundance, cm if blade length, shoots per square meter if short shoot density
 * *sdval*: Standard deviation for the measured variable, same units as in aveval
 
-__Summarized frequency occurrence data__: Summarized data at each transect and date, aggregating information across sites (quadrats).
+__Summarized frequency occurrence data (tranocctab.csv)__: Summarized data at each transect and date, aggregating information across sites (quadrats).
 
 * *Date*: Sample date in YYYY-MM-DD
 * *Transect*: Transect name
