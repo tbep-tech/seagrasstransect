@@ -15,17 +15,29 @@ if(Sys.info()[1] == 'Windows')
 # check if data are current -----------------------------------------------
 
 newdat <- read_transect()
+exists <- file.exists('data/trndat.RData')
 
-if(file.exists('data/trndat.RData')){
-  
+if(exists){
+
   load(file = 'data/trndat.RData')
   
   iscurrent <- identical(newdat, trndat)
 
-  if(!iscurrent)
+  if(iscurrent)
+    cat('File is current, not running...\n')
+  
+  if(!iscurrent){
+    
+    cat('File is not current, saving and running...\n')
     save(trndat, file = 'data/trndat.RData', compress = 'xz')
     
-} else {
+  }
+  
+}
+
+if(!exists){
+  
+  cat('File does not exist, saving and running...\n')
   
   trndat <- newdat
   iscurrent <- FALSE
