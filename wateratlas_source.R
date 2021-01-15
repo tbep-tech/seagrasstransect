@@ -4,13 +4,8 @@
 library(tbeptools)
 library(dplyr)
 library(tidyr)
-library(extrafont)
 library(flextable)
 library(rmarkdown)
-
-loadfonts(device = 'pdf', quiet = T)
-if(Sys.info()[1] == 'Windows')
-  loadfonts(device = 'win', quiet = T)
 
 # check if data are current -----------------------------------------------
 
@@ -54,17 +49,17 @@ if(!iscurrent){
   
   # report card graphic -----------------------------------------------------
   
-  p <- show_transectmatrix(transectocc, family = 'Lato')
+  p <- show_transectmatrix(transectocc)
   
-  jpeg('docs/reportcard.jpg', height = 8, width = 4, units = 'in', res = 300, family = 'Lato')
+  jpeg('docs/reportcard.jpg', height = 8, width = 4, units = 'in', res = 300)
   print(p)
   dev.off()
   
   # frequency occurrence graphic --------------------------------------------
   
-  p <- show_transectavespp(transectocc, family = 'Lato')
+  p <- show_transectavespp(transectocc)
   
-  jpeg('docs/freqocc.jpg', height = 5, width = 8, units = 'in', res = 300, family = 'Lato')
+  jpeg('docs/freqocc.jpg', height = 5, width = 8, units = 'in', res = 300)
   print(p)
   dev.off()
   
