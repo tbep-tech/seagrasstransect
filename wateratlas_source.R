@@ -17,7 +17,7 @@ transectocc <- anlz_transectocc(dat)
 
 p <- show_transectmatrix(transectocc)
 
-jpeg('wateratlas_content/reportcard.jpg', height = 5, width = 8, units = 'in', res = 300, family = 'Lato')
+jpeg('docs/reportcard.jpg', height = 8, width = 5, units = 'in', res = 300, family = 'Lato')
 print(p)
 dev.off()
 
@@ -25,7 +25,7 @@ dev.off()
 
 p <- show_transectavespp(transectocc)
 
-jpeg('wateratlas_content/freqocc.jpg', height = 5, width = 8, units = 'in', res = 300, family = 'Lato')
+jpeg('docs/freqocc.jpg', height = 5, width = 8, units = 'in', res = 300, family = 'Lato')
 print(p)
 dev.off()
 
@@ -64,12 +64,12 @@ tab <- totab %>%
   padding(padding = 0, part = 'all') %>%
   fontsize(size = 12, part = 'all') 
 
-save_as_html(tab, 'wateratlas_content/freqocctab.html')
+save_as_html(tab, 'docs/freqocctab.html')
 
 # data download -----------------------------------------------------------
 
-write.csv(dat, 'wateratlas_content/trantab.csv', row.names = F)
-write.csv(transectocc, 'wateratlas_content/tranocctab.csv', row.names = F)
+write.csv(dat, 'docs/trantab.csv', row.names = F)
+write.csv(transectocc, 'docs/tranocctab.csv', row.names = F)
 
 # metadata ----------------------------------------------------------------
 

@@ -18,11 +18,3 @@ __Summarized frequency occurrence data__: Summarized data at each transect and d
 * *nsites*: Number of sites (quadrats) at each transect/date, repeated across rows  
 * *foest*: Frequency occurrence estimate for the whole transect for the species, from 0 - 1
 * *bbest*: Abundance (Braun-Blaunquet) average across sites (quadrats) for the species, from 0 - 5
-
-__Transect locations__: Transect location data (EPSG 4326), including responsible monitoring agency
-
-* *Transect*: Transect name
-* *lat_dd*: Latitude in decimal degrees
-* *lon_dd*: Longitude in decimal degrees
-* *mon_agency*: Responsible monitoring agency for collecting data at the transect
-* *bay_segment*: Bay segment where the transect is located
