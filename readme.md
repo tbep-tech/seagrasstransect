@@ -8,8 +8,8 @@ This repository contains a mix of content for evaluating seagrass transct data f
 * Transect reporting materials for [USF Water Atlas](https://dev.tampabay.wateratlas.usf.edu/mockups/tbep-seagrass/)
      * Report card: [link](https://raw.githubusercontent.com/tbep-tech/seagrasstransect/master/docs/reportcard.jpg)
      * Frequency occurrence graphic: [link](https://raw.githubusercontent.com/tbep-tech/seagrasstransect/master/docs/freqocc.jpg)
-     * Frequency occurrence table: [link](https://tbep-tech.github.io/seagrasstransect/freqocctab.html)
+     * Frequency occurrence table: [link](https://tbep-tech.github.io/seagrasstransect/docs/freqocctab.html)
      * Downloadable csv files
-         * Raw transect data: [link](https://github.com/tbep-tech/seagrasstransect/raw/master/wateratlas_content/trantab.csv) 
-         * Frequency occurrence data by transect: [link](https://github.com/tbep-tech/seagrasstransect/raw/master/wateratlas_content/tranocctab.csv) 
-         * Tabular metadata: [link](https://tbep-tech.github.io/seagrasstransect/metadata.html)
+         * Raw transect data: [link](https://github.com/tbep-tech/seagrasstransect/raw/master/docs/trantab.csv) 
+         * Frequency occurrence data by transect: [link](https://github.com/tbep-tech/seagrasstransect/raw/master/docs/tranocctab.csv) 
+         * Tabular metadata: [link](https://tbep-tech.github.io/seagrasstransect/docs/metadata.html)
