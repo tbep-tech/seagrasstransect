@@ -6,6 +6,13 @@ library(dplyr)
 library(tidyr)
 library(flextable)
 library(rmarkdown)
+library(extrafont)
+
+loadfonts(device = 'pdf', quiet = T)
+if(Sys.info()[1] == 'Windows')
+  loadfonts(device = 'win', quiet = T)
+
+fml <- 'Lato'
 
 # check if data are current -----------------------------------------------
 
@@ -51,9 +58,9 @@ if(!iscurrent){
   
   cat('Making report card\n')
   
-  p <- show_transectmatrix(transectocc)
+  p <- show_transectmatrix(transectocc, family = fml)
   
-  jpeg('docs/reportcard.jpg', height = 8, width = 4, units = 'in', res = 300)
+  jpeg('docs/reportcard.jpg', height = 8, width = 4, units = 'in', res = 300, family = fml)
   print(p)
   dev.off()
   
@@ -61,9 +68,9 @@ if(!iscurrent){
   
   cat('Making frequency occurrence graphic\n')
   
-  p <- show_transectavespp(transectocc)
+  p <- show_transectavespp(transectocc, family = fml)
   
-  jpeg('docs/freqocc.jpg', height = 5, width = 8, units = 'in', res = 300)
+  jpeg('docs/freqocc.jpg', height = 5, width = 8, units = 'in', res = 300, family = fml)
   print(p)
   dev.off()
   
