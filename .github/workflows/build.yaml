@@ -30,7 +30,7 @@ jobs:
           sudo apt-get install libfribidi-dev
       - name: Install dependencies
         run: |
-          install.packages(c("dplyr", "rmarkdown", "knitr", "tidyr", "extrafont", "remotes", "flextable"))
+          install.packages(c("dplyr", "rmarkdown", "knitr", "tidyr", "extrafont", "remotes", "flextable", "extrafont"))
           remotes::install_github("tbep-tech/tbeptools")
         shell: Rscript {0}
       - name: Build water atlas content
