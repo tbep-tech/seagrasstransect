@@ -49,6 +49,8 @@ if(!iscurrent){
   
   # report card graphic -----------------------------------------------------
   
+  cat('Making report card\n')
+  
   p <- show_transectmatrix(transectocc)
   
   jpeg('docs/reportcard.jpg', height = 8, width = 4, units = 'in', res = 300)
@@ -57,6 +59,8 @@ if(!iscurrent){
   
   # frequency occurrence graphic --------------------------------------------
   
+  cat('Making frequency occurrence graphic\n')
+  
   p <- show_transectavespp(transectocc)
   
   jpeg('docs/freqocc.jpg', height = 5, width = 8, units = 'in', res = 300)
@@ -64,6 +68,8 @@ if(!iscurrent){
   dev.off()
   
   # tabular summary ---------------------------------------------------------
+  
+  cat('Making tabular summary\n')
   
   # annual average by segment
   totab <- transectocc %>% 
@@ -102,14 +108,20 @@ if(!iscurrent){
   
   # data download -----------------------------------------------------------
   
+  cat('Making data download\n')
+  
   write.csv(trndat, 'docs/trantab.csv', row.names = F)
   write.csv(transectocc, 'docs/tranocctab.csv', row.names = F)
   
   # metadata ----------------------------------------------------------------
   
-  render('docs/metadata.md', html_document())
+  cat('Making metadata\n')
+  
+  render('docs/metadata.md', output_file = 'metadata.html', output_dir = 'docs')
 
   # render README for date update -------------------------------------------
+  
+  cat('Making README\n')
   
   render('README.Rmd')
   
