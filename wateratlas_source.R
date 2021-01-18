@@ -98,6 +98,7 @@ if(!iscurrent){
   tab <- totab %>% 
     flextable %>% 
     set_formatter(
+      Year = function(x) format(as.character(x)),
       `No Cover` = function(x) sprintf("%.01f", x),
       `Halodule` = function(x) sprintf("%.01f", x),
       `Syringodium` = function(x) sprintf("%.01f", x),
@@ -111,7 +112,7 @@ if(!iscurrent){
     padding(padding = 0, part = 'all') %>%
     fontsize(size = 12, part = 'all') 
   
-  save_as_html(x = tab, path = 'docs/freqocctab.html')
+  save_as_html(tab, path = 'docs/freqocctab.html')
   
   # data download -----------------------------------------------------------
   
