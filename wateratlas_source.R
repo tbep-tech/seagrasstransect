@@ -104,7 +104,7 @@ if(!iscurrent){
     padding(padding = 0, part = 'all') %>%
     fontsize(size = 12, part = 'all') 
   
-  save_as_html(tab, 'docs/freqocctab.html')
+  save_as_html(x = tab, path = 'docs/freqocctab.html')
   
   # data download -----------------------------------------------------------
   
