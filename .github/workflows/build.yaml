@@ -20,13 +20,14 @@ jobs:
       - uses: r-lib/actions/setup-pandoc@v1
       - name: Install Ubuntu dependencies
         run: |
-          sudo apt-get libpoppler-cpp-dev
-          sudo apt-get libudunits2-dev
-          sudo apt-get libgdal-dev
-          sudo apt-get libgeos-dev
-          sudo apt-get libproj-dev
-          sudo apt-get libharfbuzz-dev
-          sudo apt-get libfribidi-dev
+          sudo apt-get install libcurl4-openssl-dev
+          sudo apt-get install libpoppler-cpp-dev
+          sudo apt-get install libudunits2-dev
+          sudo apt-get install libgdal-dev
+          sudo apt-get install libgeos-dev
+          sudo apt-get install libproj-dev
+          sudo apt-get install libharfbuzz-dev
+          sudo apt-get install libfribidi-dev
       - name: Install dependencies
         run: |
           install.packages(c("dplyr", "rmarkdown", "knitr", "tidyr", "extrafont", "remotes", "flextable"))
