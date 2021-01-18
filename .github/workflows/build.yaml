@@ -11,7 +11,7 @@ name: build
 jobs:
   render:
     name: build
-    runs-on: windows-latest
+    runs-on: ubuntu-20.04
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -20,11 +20,11 @@ jobs:
       - uses: r-lib/actions/setup-pandoc@v1
       - name: Install dependencies
         run: |
-          install.packages(c("dplyr", "rmarkdown", "knitr", "tidyr", "extrafont", "remotes", "flextable", "here"))
+          install.packages(c("dplyr", "rmarkdown", "knitr", "tidyr", "extrafont", "remotes", "flextable"))
           remotes::install_github("tbep-tech/tbeptools")
         shell: Rscript {0}
       - name: Build water atlas content
-        run: Rscript -e 'source(here::here("wateratlas_source.R"))'
+        run: Rscript -e 'source("wateratlas_source.R")'
       - name: Commit results
         run: |
           git config --local user.email "actions@github.com"
