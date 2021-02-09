@@ -110,7 +110,8 @@ if(!iscurrent){
     merge_v(j = 'Bay segment') %>%
     valign(j = 'Bay segment', valign = 'top') %>%
     padding(padding = 0, part = 'all') %>%
-    fontsize(size = 12, part = 'all') 
+    fontsize(size = 12, part = 'all') %>%
+    set_caption(caption = 'Summary of frequency occurrence estimates for all species by year and major bay segment.  HB: Hillsborough Bay, OTB: Old Tampa Bay, MTB: Middle Tampa Bay, LTB: Lower Tampa Bay, BCB: Boca Ciega Bay')
   
   save_as_html(tab, path = 'docs/freqocctab.html')
   
