@@ -18,7 +18,7 @@ fml <- 'Lato'
 # check if data are current -----------------------------------------------
 
 newdat <- read_transect()
-save(newdat, file = 'newdat.RData')
+save(newdat, file = 'data/newdat.RData')
 
 exists <- file.exists('data/trndat.RData')
 
