@@ -7,6 +7,7 @@ library(tidyr)
 library(flextable)
 library(rmarkdown)
 library(extrafont)
+library(tools)
 
 loadfonts(device = 'pdf', quiet = T)
 if(Sys.info()[1] == 'Windows')
@@ -17,13 +18,15 @@ fml <- 'Lato'
 # check if data are current -----------------------------------------------
 
 newdat <- read_transect()
+save(newdat, file = 'newdat.RData')
+
 exists <- file.exists('data/trndat.RData')
 
 if(exists){
 
   load(file = 'data/trndat.RData')
   
-  iscurrent <- identical(newdat, trndat)
+  iscurrent <- identical(md5sum('data/newdat.RData')[1], md5sum('data/trndat.RData')[1])
 
   if(iscurrent)
     cat('File is current, not running...\n')
@@ -31,6 +34,7 @@ if(exists){
   if(!iscurrent){
     
     cat('File is not current, saving and running...\n')
+    trndat <- newdat
     save(trndat, file = 'data/trndat.RData', compress = 'xz')
     
   }
@@ -47,6 +51,9 @@ if(!exists){
   save(trndat, file = 'data/trndat.RData', compress = 'xz')
   
 }
+
+# remove newdat
+file.remove('data/newdat.RData')
 
 # create new files if data aren't current ---------------------------------
 
