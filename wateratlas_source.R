@@ -32,8 +32,6 @@ if(exists){
   if(!iscurrent){
     
     cat('File is not current, saving and running...\n')
-    
-    file.remove('data/trndat.RData')
     trndat <- newdat
     save(trndat, file = 'data/trndat.RData', compress = 'xz')
     
