@@ -62,7 +62,7 @@ if(!iscurrent){
   
   p <- show_transectmatrix(transectocc, family = fml)
   
-  jpeg('docs/reportcard.jpg', height = 8, width = 4, units = 'in', res = 300, family = fml)
+  jpeg('docs/reportcard.jpg', height = 6, width = 3.5, units = 'in', res = 300, family = fml)
   print(p)
   dev.off()
   
