@@ -18,15 +18,13 @@ fml <- 'Lato'
 # check if data are current -----------------------------------------------
 
 newdat <- read_transect()
-save(newdat, file = 'data/newdat.RData')
-
 exists <- file.exists('data/trndat.RData')
 
 if(exists){
 
   load(file = 'data/trndat.RData')
   
-  iscurrent <- identical(md5sum('data/newdat.RData')[1], md5sum('data/trndat.RData')[1])
+  iscurrent <- identical(trndat, newdat)
 
   if(iscurrent)
     cat('File is current, not running...\n')
@@ -34,6 +32,8 @@ if(exists){
   if(!iscurrent){
     
     cat('File is not current, saving and running...\n')
+    
+    file.remove('data/trndat.RData')
     trndat <- newdat
     save(trndat, file = 'data/trndat.RData', compress = 'xz')
     
@@ -51,9 +51,6 @@ if(!exists){
   save(trndat, file = 'data/trndat.RData', compress = 'xz')
   
 }
-
-# remove newdat
-file.remove('data/newdat.RData')
 
 # create new files if data aren't current ---------------------------------
 
