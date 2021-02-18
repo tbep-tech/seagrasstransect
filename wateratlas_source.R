@@ -60,7 +60,7 @@ if(!iscurrent){
   
   cat('Making report card\n')
   
-  p <- show_transectmatrix(transectocc, family = fml)
+  p <- show_transectmatrix(transectocc, family = fml, neutral = T)
   
   jpeg('docs/reportcard.jpg', height = 6, width = 3.5, units = 'in', res = 300, family = fml)
   print(p)
