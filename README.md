@@ -10,7 +10,7 @@ transect data for Tampa Bay.
     quality, phytoplankton, and seagrass data is also available
     [here](http://shiny.tbep.org/seagrasstransect/otbseagrass.Rmd).
   - [![build](https://github.com/tbep-tech/seagrasstransect/workflows/build/badge.svg)](https://github.com/tbep-tech/seagrasstransect/actions)
-    (last data update 2021-02-18) Transect reporting materials for [USF
+    (last data update 2021-04-02) Transect reporting materials for [USF
     Water
     Atlas](https://dev.tampabay.wateratlas.usf.edu/mockups/tbep-seagrass/)
       - Report card:
