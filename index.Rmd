@@ -46,9 +46,11 @@ datsum <- dat %>%
   dplyr::mutate(
     grp = paste0(MonitoringAgency, ' (', Crew, ')')
   ) %>% 
-  group_by(Site, Savspecies, var) %>% 
-  summarise(cv = 100 * sd(aveval, na.rm = T) / mean(aveval, na.rm = T)) %>% 
-  ungroup %>% 
+  group_by(yr, Site, Savspecies, var) %>% 
+  summarise(
+    cv = 100 * sd(aveval, na.rm = T) / mean(aveval, na.rm = T), 
+    .groups = 'drop'
+    ) %>% 
   na.omit()
 
 # # style file
@@ -63,7 +65,11 @@ output$dlfigs <- downloadHandler(
   filename = function(){'allfigures.pdf'},
   content = function(file){
 
+    # input
+    yrssel <- input$yrssel
+    
     todl <- dat %>% 
+      filter(yr %in% yrssel) %>% 
       select(Savspecies, var, Site) %>% 
       unique %>% 
       arrange(Savspecies, var, Site)
@@ -76,7 +82,7 @@ output$dlfigs <- downloadHandler(
       species <- todl[[i, 'Savspecies']]
       varplo <- todl[[i, 'var']]
       
-      p <- show_compplot(dat, site, species, varplo)
+      p <- show_compplot(dat, yrrsel, site, species, varplo)
       
       print(p)
       
@@ -92,11 +98,12 @@ output$dlfigs <- downloadHandler(
 plodat <- reactive({
   
   # inputs
+  yrssel <- input$yrssel
   sppsel <- input$sppsel
   sitsel <- input$sitsel
   varsel <- input$varsel
 
-  out <- show_compplot(dat, sitsel, sppsel, varsel, base_size = 18, xtxt = 13)
+  out <- show_compplot(dat, yrssel, sitsel, sppsel, varsel, base_size = 18, xtxt = 13)
   
   validate(
     need(nrow(out$data) > 0, 'No data to plot')
@@ -108,7 +115,13 @@ plodat <- reactive({
 
 sumplodat <- reactive({
   
-  out <- ggplot(datsum, aes(x = Site, y = var, fill = cv)) +
+  # input
+  yrssel <- input$yrssel
+  
+  toplo <- datsum %>% 
+    filter(yr == yrssel)
+  
+  out <- ggplot(toplo, aes(x = Site, y = var, fill = cv)) +
     facet_wrap(~Savspecies, ncol  = 2) + 
     scale_x_discrete(expand = c(0, 0)) + 
     scale_y_discrete(expand = c(0, 0)) +
@@ -129,6 +142,47 @@ sumplodat <- reactive({
   return(out)
   
 })
+
+crewtab <- reactive({
+  
+  # input
+  yrssel <- input$yrssel
+  
+  totab <- dat %>% 
+    filter(yr %in% yrssel) %>% 
+    select(`Montoring Agency` = MonitoringAgency, Crew) %>% 
+    unique
+
+  out <- reactable(totab, 
+    groupBy = 'Montoring Agency',
+    defaultColDef = colDef(
+      footerStyle = list(fontWeight = "bold"),
+      resizable = TRUE
+      ),
+    columns = list(
+      Crew = colDef(aggregated = JS("
+        function(cellInfo) {
+          // Get comma-separated list of unique values in visible rows
+          var values = cellInfo.subRows.map(function(row) { return row.Crew })
+          var unique = values.reduce(function(obj, v) { obj[v] = true; return obj }, {})
+          return Object.keys(unique).join(', ')
+        }
+      ")
+      )
+    ),
+    filterable = T, 
+    bordered = T
+  )
+  
+  return(out)
+  
+})
+```
+
+```{r}
+column(12, 
+  column(4, selectInput('yrssel', 'Select year:', choices = sort(unique(dat$yr))))
+)
 ```
 
 ## Plot results {.tabset .tabset-pills}
@@ -136,7 +190,21 @@ sumplodat <- reactive({
 ```{r}
 column(12, 
   column(4, selectInput('sppsel', 'Select species:', choices = sppopt)),
-  column(4, selectInput('sitsel', 'Select site:', choices = sort(unique(dat$Site)))),
+  column(4, renderUI({
+    
+    # input
+    yrssel <- input$yrssel
+    
+    sitopt <- dat %>% 
+      filter(yr %in% yrssel) %>% 
+      pull(Site) %>% 
+      unique() %>% 
+      sort()
+    
+    selectInput('sitsel', 'Select site:', choices = sitopt)
+    
+    })
+  ),
   column(4, selectInput('varsel', 'Select variable:', choices =  unique(dat$var)))
 )
 ```
@@ -158,30 +226,8 @@ plotOutput('sumplodat')
 ## Crew inventory
 
 ```{r}
-totab <- dat %>% 
-  select(`Montoring Agency` = MonitoringAgency, Crew) %>% 
-  unique
-
-reactable(totab, 
-  groupBy = 'Montoring Agency',
-  defaultColDef = colDef(
-    footerStyle = list(fontWeight = "bold"),
-    resizable = TRUE
-    ),
-  columns = list(
-    Crew = colDef(aggregated = JS("
-      function(cellInfo) {
-        // Get comma-separated list of unique values in visible rows
-        var values = cellInfo.subRows.map(function(row) { return row.Crew })
-        var unique = values.reduce(function(obj, v) { obj[v] = true; return obj }, {})
-        return Object.keys(unique).join(', ')
-      }
-    ")
-    )
-  ),
-  filterable = T, 
-  bordered = T
-)
+output$crewtab <- renderReactable(crewtab())
+reactableOutput('crewtab')
 ```
 
 ## Transect locations
@@ -194,6 +240,8 @@ mapview(trnpts, zcol = 'MonAgency', lwd = 0, legend = F, homebutton = F, col.reg
 ```
 
 ## Download 
+
+Download all figures for `r renderText(input$yrssel)`.
 
 ```{r}
 column(6,  
