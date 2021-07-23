@@ -82,7 +82,7 @@ output$dlfigs <- downloadHandler(
       species <- todl[[i, 'Savspecies']]
       varplo <- todl[[i, 'var']]
       
-      p <- show_compplot(dat, yrrsel, site, species, varplo)
+      p <- show_compplot(dat, yrssel, site, species, varplo)
       
       print(p)
       
