@@ -413,7 +413,7 @@ trndmapsel <- reactive({
     addMarkers(data = wqalgtrnd2[wqalgtrnd2$pval != 'ns', ], ~Longitude, ~Latitude, icon = makeIcon(here('www/sigwq.png'), 15, 15), label = ~paste0('Station: ', epchc_station, ', Tau: ', tau, ', p ', pval))
   
   
-  out <- leafsync::sync(m1, m2, ncol = 2)
+  out <- m1 #leafsync::sync(m1, m2, ncol = 2)
   
   return(out)
   
