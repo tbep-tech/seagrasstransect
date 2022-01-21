@@ -21,6 +21,7 @@ library(extrafont)
 library(EnvStats)
 library(leafsync)
 library(forcats)
+library(here)
 
 source('R/funcs.R')
 
@@ -393,23 +394,23 @@ trndmapsel <- reactive({
   m1 <- m %>% 
     clearMarkers() %>% 
     clearControls() %>% 
-    addMarkers(data = sgtrnd1[sgtrnd1$cols == 'green', ], ~LONG_DD, ~LAT_DD, icon = makeIcon('www/upsg.png', 15, 15), label = ~paste0('Transect: ', TRAN_ID, ', Tau: ', tau, ', p ', pval)) %>% 
-    addMarkers(data = sgtrnd1[sgtrnd1$cols == 'blue', ], ~LONG_DD, ~LAT_DD, icon = makeIcon('www/dnsg.png', 15, 15), label = ~paste0('Transect: ', TRAN_ID, ', Tau: ', tau, ', p ', pval)) %>% 
-    addMarkers(data = sgtrnd1[sgtrnd1$pval != 'ns', ], ~LONG_DD, ~LAT_DD, icon = makeIcon('www/sigsg.png', 15, 15), label = ~paste0('Transect: ', TRAN_ID, ', Tau: ', tau, ', p ', pval)) %>% 
-    addMarkers(data = wqalgtrnd1[wqalgtrnd1$cols == 'green', ], ~Longitude, ~Latitude, icon = makeIcon('www/upwq.png', 15, 15), label = ~paste0('Station: ', epchc_station, ', Tau: ', tau, ', p ', pval)) %>% 
-    addMarkers(data = wqalgtrnd1[wqalgtrnd1$cols == 'blue', ], ~Longitude, ~Latitude, icon = makeIcon('www/dnwq.png', 15, 15), label = ~paste0('Station: ', epchc_station, ', Tau: ', tau, ', p ', pval)) %>% 
-    addMarkers(data = wqalgtrnd1[wqalgtrnd1$pval != 'ns', ], ~Longitude, ~Latitude, icon = makeIcon('www/sigwq.png', 15, 15), label = ~paste0('Station: ', epchc_station, ', Tau: ', tau, ', p ', pval))
+    addMarkers(data = sgtrnd1[sgtrnd1$cols == 'green', ], ~LONG_DD, ~LAT_DD, icon = makeIcon(here('www/upsg.png'), 15, 15), label = ~paste0('Transect: ', TRAN_ID, ', Tau: ', tau, ', p ', pval)) %>% 
+    addMarkers(data = sgtrnd1[sgtrnd1$cols == 'blue', ], ~LONG_DD, ~LAT_DD, icon = makeIcon(here('www/dnsg.png'), 15, 15), label = ~paste0('Transect: ', TRAN_ID, ', Tau: ', tau, ', p ', pval)) %>% 
+    addMarkers(data = sgtrnd1[sgtrnd1$pval != 'ns', ], ~LONG_DD, ~LAT_DD, icon = makeIcon(here('www/sigsg.png'), 15, 15), label = ~paste0('Transect: ', TRAN_ID, ', Tau: ', tau, ', p ', pval)) %>% 
+    addMarkers(data = wqalgtrnd1[wqalgtrnd1$cols == 'green', ], ~Longitude, ~Latitude, icon = makeIcon(here('www/upwq.png'), 15, 15), label = ~paste0('Station: ', epchc_station, ', Tau: ', tau, ', p ', pval)) %>% 
+    addMarkers(data = wqalgtrnd1[wqalgtrnd1$cols == 'blue', ], ~Longitude, ~Latitude, icon = makeIcon(here('www/dnwq.png'), 15, 15), label = ~paste0('Station: ', epchc_station, ', Tau: ', tau, ', p ', pval)) %>% 
+    addMarkers(data = wqalgtrnd1[wqalgtrnd1$pval != 'ns', ], ~Longitude, ~Latitude, icon = makeIcon(here('www/sigwq.png'), 15, 15), label = ~paste0('Station: ', epchc_station, ', Tau: ', tau, ', p ', pval))
   
   
   m2 <- m %>% 
     clearMarkers() %>% 
     clearControls() %>% 
-    addMarkers(data = sgtrnd2[sgtrnd2$cols == 'green', ], ~LONG_DD, ~LAT_DD, icon = makeIcon('www/upsg.png', 15, 15), label = ~paste0('Transect: ', TRAN_ID, ', Tau: ', tau, ', p ', pval)) %>% 
-    addMarkers(data = sgtrnd2[sgtrnd2$cols == 'blue', ], ~LONG_DD, ~LAT_DD, icon = makeIcon('www/dnsg.png', 15, 15), label = ~paste0('Transect: ', TRAN_ID, ', Tau: ', tau, ', p ', pval)) %>% 
-    addMarkers(data = sgtrnd2[sgtrnd2$pval != 'ns', ], ~LONG_DD, ~LAT_DD, icon = makeIcon('www/sigsg.png', 15, 15), label = ~paste0('Transect: ', TRAN_ID, ', Tau: ', tau, ', p ', pval)) %>% 
-    addMarkers(data = wqalgtrnd2[wqalgtrnd2$cols == 'green', ], ~Longitude, ~Latitude, icon = makeIcon('www/upwq.png', 15, 15), label = ~paste0('Station: ', epchc_station, ', Tau: ', tau, ', p ', pval)) %>% 
-    addMarkers(data = wqalgtrnd2[wqalgtrnd2$cols == 'blue', ], ~Longitude, ~Latitude, icon = makeIcon('www/dnwq.png', 15, 15), label = ~paste0('Station: ', epchc_station, ', Tau: ', tau, ', p ', pval)) %>% 
-    addMarkers(data = wqalgtrnd2[wqalgtrnd2$pval != 'ns', ], ~Longitude, ~Latitude, icon = makeIcon('www/sigwq.png', 15, 15), label = ~paste0('Station: ', epchc_station, ', Tau: ', tau, ', p ', pval))
+    addMarkers(data = sgtrnd2[sgtrnd2$cols == 'green', ], ~LONG_DD, ~LAT_DD, icon = makeIcon(here('www/upsg.png'), 15, 15), label = ~paste0('Transect: ', TRAN_ID, ', Tau: ', tau, ', p ', pval)) %>% 
+    addMarkers(data = sgtrnd2[sgtrnd2$cols == 'blue', ], ~LONG_DD, ~LAT_DD, icon = makeIcon(here('www/dnsg.png'), 15, 15), label = ~paste0('Transect: ', TRAN_ID, ', Tau: ', tau, ', p ', pval)) %>% 
+    addMarkers(data = sgtrnd2[sgtrnd2$pval != 'ns', ], ~LONG_DD, ~LAT_DD, icon = makeIcon(here('www/sigsg.png'), 15, 15), label = ~paste0('Transect: ', TRAN_ID, ', Tau: ', tau, ', p ', pval)) %>% 
+    addMarkers(data = wqalgtrnd2[wqalgtrnd2$cols == 'green', ], ~Longitude, ~Latitude, icon = makeIcon(here('www/upwq.png'), 15, 15), label = ~paste0('Station: ', epchc_station, ', Tau: ', tau, ', p ', pval)) %>% 
+    addMarkers(data = wqalgtrnd2[wqalgtrnd2$cols == 'blue', ], ~Longitude, ~Latitude, icon = makeIcon(here('www/dnwq.png'), 15, 15), label = ~paste0('Station: ', epchc_station, ', Tau: ', tau, ', p ', pval)) %>% 
+    addMarkers(data = wqalgtrnd2[wqalgtrnd2$pval != 'ns', ], ~Longitude, ~Latitude, icon = makeIcon(here('www/sigwq.png'), 15, 15), label = ~paste0('Station: ', epchc_station, ', Tau: ', tau, ', p ', pval))
   
   
   out <- leafsync::sync(m1, m2, ncol = 2)
