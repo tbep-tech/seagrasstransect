@@ -13,6 +13,7 @@ loadfonts(device = 'pdf', quiet = T)
 if(Sys.info()[1] == 'Windows')
   loadfonts(device = 'win', quiet = T)
 
+maxyr <- 2021
 fml <- 'Lato'
 
 # check if data are current -----------------------------------------------
@@ -60,7 +61,7 @@ if(!iscurrent){
   
   cat('Making report card\n')
   
-  p <- show_transectmatrix(transectocc, family = fml, neutral = T)
+  p <- show_transectmatrix(transectocc, family = fml, neutral = T, yrrng = c(1998, maxyr))
   
   jpeg('docs/reportcard.jpg', height = 6, width = 3.5, units = 'in', res = 300, family = fml)
   print(p)
@@ -70,7 +71,7 @@ if(!iscurrent){
   
   cat('Making frequency occurrence graphic\n')
   
-  p <- show_transectavespp(transectocc, family = fml)
+  p <- show_transectavespp(transectocc, family = fml, yrrng = c(1998, maxyr))
   
   jpeg('docs/freqocc.jpg', height = 5, width = 8, units = 'in', res = 300, family = fml)
   print(p)
@@ -85,7 +86,7 @@ if(!iscurrent){
     anlz_transectavespp( 
       total = T, 
       bay_segment = c('HB', 'OTB', 'MTB', 'LTB', 'BCB'), 
-      yrrng = c(1998, 2020), 
+      yrrng = c(1998, maxyr), 
       species = c('Halodule', 'Syringodium', 'Thalassia', 'Halophila', 'Ruppia', 'Caulerpa'), 
       by_seg = T
     ) %>%
