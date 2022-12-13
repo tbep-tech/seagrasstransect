@@ -13,7 +13,7 @@ loadfonts(device = 'pdf', quiet = T)
 if(Sys.info()[1] == 'Windows')
   loadfonts(device = 'win', quiet = T)
 
-maxyr <- 2021
+maxyr <- 2022
 fml <- 'Lato'
 
 # check if data are current -----------------------------------------------
