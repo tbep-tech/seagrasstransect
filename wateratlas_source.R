@@ -135,7 +135,7 @@ if(!iscurrent){
   
   cat('Making README\n')
   
-  render('README.Rmd')
+  render('README.Rmd', output_format = 'md_document')
   
 }
 
