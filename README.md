@@ -8,7 +8,7 @@ transect data for Tampa Bay.
     [here](http://shiny.tbep.org/seagrasstransect/otbseagrass.Rmd).
 -   Transect reporting materials for [USF Water
     Atlas](https://dev.tampabay.wateratlas.usf.edu/mockups/tbep-seagrass/)
-    (last data update 2025-10-29)
+    (last data update 2025-12-05)
     -   Report card:
         [link](https://raw.githubusercontent.com/tbep-tech/seagrasstransect/master/docs/reportcard.jpg)
     -   Frequency occurrence graphic:
