@@ -13,12 +13,12 @@ loadfonts(device = 'pdf', quiet = T)
 if(Sys.info()[1] == 'Windows')
   loadfonts(device = 'win', quiet = T)
 
-maxyr <- 2025
 fml <- 'Lato'
 
 # check if data are current -----------------------------------------------
 
 newdat <- read_transect()
+maxyr <- max(lubridate::year(newdat$Date), na.rm = T)
 exists <- file.exists('data/trndat.RData')
 
 if(exists){
